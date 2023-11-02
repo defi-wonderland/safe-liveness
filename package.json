@@ -1,20 +1,14 @@
 {
-  "name": "solidity-foundry-boilerplate",
+  "name": "safe-liveness-poc",
   "version": "1.0.0",
   "private": true,
-  "description": "Production ready Solidity boilerplate with Foundry",
-  "homepage": "https://github.com/defi-wonderland/solidity-foundry-boilerplate#readme",
+  "description": "Safe Liveness PoC",
+  "homepage": "https://github.com/defi-wonderland/safe-liveness",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/defi-wonderland/solidity-foundry-boilerplate.git"
+    "url": "git+https://github.com/defi-wonderland/safe-liveness.git"
   },
-  "license": "MIT",
   "author": "Wonderland",
-  "contributors": [
-    "0xGorilla (https://github.com/0xGorilla)",
-    "0xng (https://github.com/0xng)",
-    "gas1cent (https://github.com/gas1cent)"
-  ],
   "scripts": {
     "build": "forge build",
     "build:optimized": "FOUNDRY_PROFILE=optimized forge build",
