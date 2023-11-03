@@ -21,7 +21,7 @@ interface IStorageMirror {
   //////////////////////////////////////////////////////////////*/
 
   struct SafeSettings {
-    // Aray of the safes owners
+    // Array of the safes owners
     address[] owners;
     // The threshold of the safe
     uint256 threshold;
