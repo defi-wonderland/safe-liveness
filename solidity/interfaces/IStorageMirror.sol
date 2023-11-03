@@ -2,6 +2,10 @@
 pragma solidity =0.8.19;
 
 interface IStorageMirror {
+  /*///////////////////////////////////////////////////////////////
+                            EVENTS
+  //////////////////////////////////////////////////////////////*/
+
   /**
    * @notice Emits when the settings have been updated
    *
@@ -12,10 +16,29 @@ interface IStorageMirror {
 
   event SettingsUpdated(address indexed _safe, bytes32 indexed _settingsHash, SafeSettings _safeSettings);
 
+  /*///////////////////////////////////////////////////////////////
+                            STRUCTS
+  //////////////////////////////////////////////////////////////*/
+
   struct SafeSettings {
+    // Aray of the safes owners
     address[] owners;
+    // The threshold of the safe
     uint256 threshold;
   }
+
+  /*///////////////////////////////////////////////////////////////
+                            VARIABLES
+  //////////////////////////////////////////////////////////////*/
+
+  /**
+   * @notice The mapping of the safe to the keccak256(abi.encode(SafeSettings))
+   */
+  function latestSettingsHash(address _safe) external view returns (bytes32 _latestSettingsHash);
+
+  /*///////////////////////////////////////////////////////////////
+                            LOGIC
+  //////////////////////////////////////////////////////////////*/
 
   /**
    * @notice Updates a safe's settings hash
@@ -23,9 +46,4 @@ interface IStorageMirror {
    * @param _safeSettings The settings we are going to update to
    */
   function update(SafeSettings memory _safeSettings) external;
-
-  /**
-   * @notice The mapping of the safe to the keccak256(abi.encode(SafeSettings))
-   */
-  function latestSettingsHash(address _safe) external view returns (bytes32 _latestSettingsHash);
 }
