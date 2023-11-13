@@ -32,18 +32,19 @@ contract UpdateStorageMirrorGuard is Guard {
   /**
    * @notice Guard hook that is called before a Safe transaction is executed
    */
+  // solhint-disable no-unused-vars
   function checkTransaction(
-    address to,
-    uint256 value,
-    bytes memory data,
-    Enum.Operation operation,
-    uint256 safeTxGas,
-    uint256 baseGas,
-    uint256 gasPrice,
-    address gasToken,
-    address payable refundReceiver,
-    bytes memory signatures,
-    address msgSender
+    address _to,
+    uint256 _value,
+    bytes memory _data,
+    Enum.Operation _operation,
+    uint256 _safeTxGas,
+    uint256 _baseGas,
+    uint256 _gasPrice,
+    address _gasToken,
+    address payable _refundReceiver,
+    bytes memory _signatures,
+    address _msgSender
   ) external {
     didSettingsChange = true;
     settingsHash = keccak256(abi.encodePacked('settings'));
