@@ -20,8 +20,8 @@ contract FakeSafe {
     }
   }
 
-  function makeDelegateCall(address _guard) external {
-    (bool _success,) = CALLBACK_MODULE.delegatecall(abi.encodeWithSignature('setupGuardAndModule(address)', _guard));
+  function makeDelegateCall() external {
+    (bool _success,) = CALLBACK_MODULE.delegatecall(abi.encodeWithSignature('setupGuardAndModule()'));
 
     // solhint-disable-next-line
     require(_success);
@@ -64,7 +64,7 @@ abstract contract Base is DSTestFull {
   address internal _guard = _label('guard');
   address internal _storageMirror = _label('storageMirror');
 
-  GuardCallbackModule internal _guardCallbackModule = new GuardCallbackModule(_storageMirror);
+  GuardCallbackModule internal _guardCallbackModule = new GuardCallbackModule(_storageMirror, _guard);
   FakeSafe internal _fakeSafe = new FakeSafe(address(_guardCallbackModule));
 
   event EnabledModule(address _module);
@@ -73,7 +73,7 @@ abstract contract Base is DSTestFull {
 
 contract UnitGuardCallbackModuel is Base {
   function testSetupGuardAndModule() public {
-    _fakeSafe.makeDelegateCall(_guard);
+    _fakeSafe.makeDelegateCall();
 
     assertEq(_guard, _fakeSafe.getGuard(), 'Guard should be saved');
     assertEq(address(_guardCallbackModule), _fakeSafe.getSentinelModule(), 'Sentinel module should be saved');
@@ -82,19 +82,19 @@ contract UnitGuardCallbackModuel is Base {
 
   function testSetupGuardAndModuleRevertsIfNotDelegateCall() public {
     vm.expectRevert(IGuardCallbackModule.OnlyDelegateCall.selector);
-    _guardCallbackModule.setupGuardAndModule(_guard);
+    _guardCallbackModule.setupGuardAndModule();
   }
 
   function testSetupGuardAndModuleEmitsGuardEvent() public {
     vm.expectEmit(true, true, true, true);
     emit ChangedGuard(_guard);
-    _fakeSafe.makeDelegateCall(_guard);
+    _fakeSafe.makeDelegateCall();
   }
 
   function testSetupGuardAndModuleEmitsModuleEvent() public {
     vm.expectEmit(true, true, true, true);
     emit EnabledModule(address(_guardCallbackModule));
-    _fakeSafe.makeDelegateCall(_guard);
+    _fakeSafe.makeDelegateCall();
   }
 
   function testSaveUpdatedSettingsMakesCall() public {
@@ -109,6 +109,7 @@ contract UnitGuardCallbackModuel is Base {
       ),
       Enum.Operation.Call
     );
+    vm.prank(_guard);
     vm.expectCall(address(_fakeSafe), _txData);
     _guardCallbackModule.saveUpdatedSettings(
       address(_fakeSafe), IStorageMirror.SafeSettings({owners: _owners, threshold: 1})

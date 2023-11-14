@@ -33,6 +33,11 @@ interface IGuardCallbackModule {
 
   error OnlyDelegateCall();
 
+  /**
+   * @notice Reverts when a function is called from an address that isnt the guard
+   */
+  error OnlyGuard();
+
   /*///////////////////////////////////////////////////////////////
                             VARIABLES
   //////////////////////////////////////////////////////////////*/
@@ -50,10 +55,9 @@ interface IGuardCallbackModule {
   /**
    * @notice Sets up the guard and module for the safe in one transaction.
    * @dev This function can only be called with a delegatecall from a safe.
-   * @param _guard The address of the guard to be set.
    */
 
-  function setupGuardAndModule(address _guard) external;
+  function setupGuardAndModule() external;
 
   /**
    * @notice Saves the updated settings for the safe to the StorageMirror.

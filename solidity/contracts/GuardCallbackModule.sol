@@ -18,23 +18,25 @@ contract GuardCallbackModule is IGuardCallbackModule {
   // @dev This address is used to check address(this) in a delegate call
   address internal immutable _THIS_ADDRESS;
   address public immutable STORAGE_MIRROR;
+  address public immutable GUARD;
 
-  constructor(address _storageMirror) {
+  constructor(address _storageMirror, address _guard) {
     _THIS_ADDRESS = address(this);
     STORAGE_MIRROR = _storageMirror;
+    GUARD = _guard;
   }
 
   /**
    * @notice Sets up the guard and module for the safe in one transaction.
    * @dev This function can only be called with a delegatecall from a safe.
-   * @param _guard The address of the guard to be set.
    */
 
-  function setupGuardAndModule(address _guard) external {
+  function setupGuardAndModule() external {
     // This function can only be called with a delegatecall()
     if (_THIS_ADDRESS == address(this)) revert OnlyDelegateCall();
 
     address _thisAddress = _THIS_ADDRESS;
+    address _guard = GUARD;
     bytes32 _moduleMappingLocation = keccak256(abi.encode(1, _THIS_ADDRESS));
     bytes32 _sentinelMappingLocation = keccak256(abi.encode(1, _SENTINEL_MODULES));
 
@@ -59,6 +61,7 @@ contract GuardCallbackModule is IGuardCallbackModule {
    */
 
   function saveUpdatedSettings(address _safe, IStorageMirror.SafeSettings memory _safeSettings) external {
+    if (msg.sender != GUARD) revert OnlyGuard();
     bytes memory _txData = abi.encodeWithSelector(IStorageMirror.update.selector, _safeSettings);
     ISafe(_safe).execTransactionFromModule(STORAGE_MIRROR, 0, _txData, Enum.Operation.Call);
   }
