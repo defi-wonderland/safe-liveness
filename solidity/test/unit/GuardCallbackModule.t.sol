@@ -8,45 +8,6 @@ import {ISafe} from 'interfaces/ISafe.sol';
 import {Enum} from 'safe-contracts/common/Enum.sol';
 
 contract FakeSafe {
-  address internal constant _SENTINEL_MODULES = address(0x1);
-  uint256 internal constant _GUARD_STORAGE_SLOT = 0x4a204f620c8c5ccdca3fd54d003badd85ba500436a431f0cbda4f558c93c34c8;
-  address public immutable CALLBACK_MODULE;
-
-  constructor(address _callbackModule) {
-    CALLBACK_MODULE = _callbackModule;
-    bytes32 _sentinelMappingLocation = keccak256(abi.encode(1, _SENTINEL_MODULES));
-    assembly {
-      sstore(_sentinelMappingLocation, 0x1)
-    }
-  }
-
-  function makeDelegateCall() external {
-    (bool _success,) = CALLBACK_MODULE.delegatecall(abi.encodeWithSignature('setupGuardAndModule()'));
-
-    // solhint-disable-next-line
-    require(_success);
-  }
-
-  function getSentinelModule() external view returns (address _sentinelModule) {
-    bytes32 _path = keccak256(abi.encode(1, _SENTINEL_MODULES));
-    assembly {
-      _sentinelModule := sload(_path)
-    }
-  }
-
-  function getSavedModule(address _module) external view returns (address _savedModule) {
-    bytes32 _path = keccak256(abi.encode(1, _module));
-    assembly {
-      _savedModule := sload(_path)
-    }
-  }
-
-  function getGuard() external view returns (address _guard) {
-    assembly {
-      _guard := sload(_GUARD_STORAGE_SLOT)
-    }
-  }
-
   // solhint-disable
   function execTransactionFromModule(
     address _to,
@@ -60,41 +21,28 @@ contract FakeSafe {
 }
 
 abstract contract Base is DSTestFull {
-  address internal _safe = _label('safe');
   address internal _guard = _label('guard');
   address internal _storageMirror = _label('storageMirror');
 
   GuardCallbackModule internal _guardCallbackModule = new GuardCallbackModule(_storageMirror, _guard);
-  FakeSafe internal _fakeSafe = new FakeSafe(address(_guardCallbackModule));
+  FakeSafe internal _fakeSafe = new FakeSafe();
 
   event EnabledModule(address _module);
   event ChangedGuard(address _guard);
 }
 
 contract UnitGuardCallbackModuel is Base {
-  function testSetupGuardAndModule() public {
-    _fakeSafe.makeDelegateCall();
-
-    assertEq(_guard, _fakeSafe.getGuard(), 'Guard should be saved');
-    assertEq(address(_guardCallbackModule), _fakeSafe.getSentinelModule(), 'Sentinel module should be saved');
-    assertEq(address(0x1), _fakeSafe.getSavedModule(address(_guardCallbackModule)), 'Module should be saved');
-  }
-
-  function testSetupGuardAndModuleRevertsIfNotDelegateCall() public {
-    vm.expectRevert(IGuardCallbackModule.OnlyDelegateCall.selector);
-    _guardCallbackModule.setupGuardAndModule();
-  }
-
-  function testSetupGuardAndModuleEmitsGuardEvent() public {
-    vm.expectEmit(true, true, true, true);
-    emit ChangedGuard(_guard);
-    _fakeSafe.makeDelegateCall();
-  }
-
-  function testSetupGuardAndModuleEmitsModuleEvent() public {
-    vm.expectEmit(true, true, true, true);
-    emit EnabledModule(address(_guardCallbackModule));
-    _fakeSafe.makeDelegateCall();
+  function testInit() public {
+    bytes memory _txData = abi.encodeWithSelector(
+      ISafe.execTransactionFromModule.selector,
+      address(_fakeSafe),
+      0,
+      abi.encodeWithSelector(ISafe.setGuard.selector, _guard),
+      Enum.Operation.Call
+    );
+    vm.prank(address(_fakeSafe));
+    vm.expectCall(address(_fakeSafe), _txData);
+    _guardCallbackModule.init(address(_fakeSafe));
   }
 
   function testSaveUpdatedSettingsMakesCall() public {
@@ -105,14 +53,20 @@ contract UnitGuardCallbackModuel is Base {
       _storageMirror,
       0,
       abi.encodeWithSelector(
-        IStorageMirror.update.selector, IStorageMirror.SafeSettings({owners: _owners, threshold: 1})
+        IStorageMirror.update.selector,
+        keccak256(abi.encode(IStorageMirror.SafeSettings({owners: _owners, threshold: 1})))
       ),
       Enum.Operation.Call
     );
     vm.prank(_guard);
     vm.expectCall(address(_fakeSafe), _txData);
     _guardCallbackModule.saveUpdatedSettings(
-      address(_fakeSafe), IStorageMirror.SafeSettings({owners: _owners, threshold: 1})
+      address(_fakeSafe), keccak256(abi.encode(IStorageMirror.SafeSettings({owners: _owners, threshold: 1})))
     );
+  }
+
+  function testSaveUpdatedSettingsRevertsIfNotCalledFromGuard(bytes32 _fakeData) public {
+    vm.expectRevert(IGuardCallbackModule.OnlyGuard.selector);
+    _guardCallbackModule.saveUpdatedSettings(address(_fakeSafe), _fakeData);
   }
 }
