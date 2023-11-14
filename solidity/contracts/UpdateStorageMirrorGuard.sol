@@ -1,18 +1,24 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity =0.8.19;
 
-import {Guard} from 'safe-contracts/base/GuardManager.sol';
+import {BaseGuard} from 'safe-contracts/base/GuardManager.sol';
 import {Enum} from 'safe-contracts/common/Enum.sol';
 import {IGuardCallbackModule} from 'interfaces/IGuardCallbackModule.sol';
+import {IStorageMirror} from 'interfaces/IStorageMirror.sol';
 
 /**
  * @title UpdateStorageMirrorGuard
  * @notice This guard is responsible for calling the GuardCallbackModule when a change in settings of a safe is executed.
  */
-contract UpdateStorageMirrorGuard is Guard {
+contract UpdateStorageMirrorGuard is BaseGuard {
+  /**
+   * @notice Emits when a change in a safe's settings is observed
+   */
+  event SettingsChanged(address indexed _safe, bytes32 indexed _settingsHash, IStorageMirror.SafeSettings _settings);
   /**
    * @notice The address of the guard callback module
    */
+
   IGuardCallbackModule public immutable GUARD_CALLBACK_MODULE;
 
   /**
@@ -47,7 +53,13 @@ contract UpdateStorageMirrorGuard is Guard {
     address _msgSender
   ) external {
     didSettingsChange = true;
-    settingsHash = keccak256(abi.encodePacked('settings'));
+    // TODO: change these data with the decoded ones
+    address[] memory _owners = new address[](1);
+    IStorageMirror.SafeSettings memory _safeSettings = IStorageMirror.SafeSettings({owners: _owners, threshold: 1});
+
+    settingsHash = keccak256(abi.encode(_safeSettings));
+
+    emit SettingsChanged(msg.sender, settingsHash, _safeSettings);
   }
 
   /**

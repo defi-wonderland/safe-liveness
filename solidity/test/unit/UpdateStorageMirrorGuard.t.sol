@@ -1,19 +1,22 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity >=0.8.4 <0.9.0;
 
-// solhint-disable-next-line
-import 'forge-std/Test.sol';
-
+import {Test} from 'forge-std/Test.sol';
 import {Enum} from 'safe-contracts/common/Enum.sol';
 import {UpdateStorageMirrorGuard} from 'contracts/UpdateStorageMirrorGuard.sol';
 import {IGuardCallbackModule} from 'interfaces/IGuardCallbackModule.sol';
+import {IStorageMirror} from 'interfaces/IStorageMirror.sol';
 
 abstract contract Base is Test {
+  event SettingsChanged(address indexed _safe, bytes32 indexed _settingsHash, IStorageMirror.SafeSettings _settings);
+
   address public safe;
   IGuardCallbackModule public guardCallbackModule;
   UpdateStorageMirrorGuard public updateStorageMirrorGuard;
 
-  bytes32 public immutable SETTINGS_HASH = keccak256(abi.encodePacked('settings'));
+  address[] public owners = new address[](1);
+  IStorageMirror.SafeSettings public safeSettings = IStorageMirror.SafeSettings({owners: owners, threshold: 1});
+  bytes32 public settingsHash = keccak256(abi.encode(safeSettings));
 
   function setUp() public {
     safe = makeAddr('safe');
@@ -27,13 +30,15 @@ contract UnitUpdateStorageMirrorGuard is Base {
     assertFalse(updateStorageMirrorGuard.didSettingsChange());
     assertEq(updateStorageMirrorGuard.settingsHash(), bytes32(''));
 
+    vm.expectEmit(true, true, true, true);
+    emit SettingsChanged(safe, settingsHash, safeSettings);
     vm.prank(safe);
     updateStorageMirrorGuard.checkTransaction(
       address(0), 0, '', Enum.Operation.Call, 0, 0, 0, address(0), payable(0), '', address(0)
     );
 
     assertTrue(updateStorageMirrorGuard.didSettingsChange());
-    assertEq(updateStorageMirrorGuard.settingsHash(), keccak256(abi.encodePacked('settings')));
+    assertEq(updateStorageMirrorGuard.settingsHash(), settingsHash, 'Settings hash should be stored');
   }
 
   function testCheckAfterExecution(bytes32 _txHash) public {
@@ -45,17 +50,17 @@ contract UnitUpdateStorageMirrorGuard is Base {
 
     vm.mockCall(
       address(guardCallbackModule),
-      abi.encodeCall(IGuardCallbackModule.saveUpdatedSettings, (safe, SETTINGS_HASH)),
+      abi.encodeCall(IGuardCallbackModule.saveUpdatedSettings, (safe, settingsHash)),
       abi.encode()
     );
     vm.expectCall(
-      address(guardCallbackModule), abi.encodeCall(IGuardCallbackModule.saveUpdatedSettings, (safe, SETTINGS_HASH))
+      address(guardCallbackModule), abi.encodeCall(IGuardCallbackModule.saveUpdatedSettings, (safe, settingsHash))
     );
     vm.prank(safe);
     updateStorageMirrorGuard.checkAfterExecution(_txHash, true);
 
     assertFalse(updateStorageMirrorGuard.didSettingsChange());
-    assertEq(updateStorageMirrorGuard.settingsHash(), keccak256(abi.encodePacked('')));
+    assertEq(updateStorageMirrorGuard.settingsHash(), keccak256(abi.encodePacked('')), 'Settings hash should reset');
   }
 
   function testCheckAfterExecutionNoSettingsChange(bytes32 _txHash) public {
@@ -63,7 +68,7 @@ contract UnitUpdateStorageMirrorGuard is Base {
     updateStorageMirrorGuard.checkAfterExecution(_txHash, true);
 
     assertFalse(updateStorageMirrorGuard.didSettingsChange());
-    assertEq(updateStorageMirrorGuard.settingsHash(), bytes32(''));
+    assertEq(updateStorageMirrorGuard.settingsHash(), bytes32(''), 'Settings hash should stay empty');
   }
 
   function testCheckAfterExecutionTxFailed(bytes32 _txHash) public {
@@ -78,6 +83,6 @@ contract UnitUpdateStorageMirrorGuard is Base {
 
     // Should be true since the tx failed to execute and thus didnt make it to reset
     assertTrue(updateStorageMirrorGuard.didSettingsChange());
-    assertEq(updateStorageMirrorGuard.settingsHash(), keccak256(abi.encodePacked('settings')));
+    assertEq(updateStorageMirrorGuard.settingsHash(), settingsHash, 'Settings hash should stay the same');
   }
 }
