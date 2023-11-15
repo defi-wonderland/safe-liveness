@@ -39,4 +39,10 @@ interface IGuardCallbackModule {
    */
 
   function saveUpdatedSettings(address _safe, bytes32 _settingsHash) external;
+
+  /**
+   * @notice Initates the module by setting the guard.
+   */
+
+  function init() external;
 }

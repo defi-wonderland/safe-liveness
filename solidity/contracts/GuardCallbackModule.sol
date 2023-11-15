@@ -22,13 +22,11 @@ contract GuardCallbackModule is IGuardCallbackModule {
 
   /**
    * @notice Initates the module by setting the guard.
-   *
-   * @param _safe The address of the safe.
    */
 
-  function init(address _safe) external {
-    ISafe(_safe).execTransactionFromModule(
-      _safe, 0, abi.encodeWithSelector(ISafe.setGuard.selector, GUARD), Enum.Operation.Call
+  function init() external {
+    ISafe(msg.sender).execTransactionFromModule(
+      msg.sender, 0, abi.encodeWithSelector(ISafe.setGuard.selector, GUARD), Enum.Operation.Call
     );
   }
 

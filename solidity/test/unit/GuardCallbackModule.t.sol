@@ -42,7 +42,7 @@ contract UnitGuardCallbackModuel is Base {
     );
     vm.prank(address(_fakeSafe));
     vm.expectCall(address(_fakeSafe), _txData);
-    _guardCallbackModule.init(address(_fakeSafe));
+    _guardCallbackModule.init();
   }
 
   function testSaveUpdatedSettingsMakesCall() public {
