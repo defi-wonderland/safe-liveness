@@ -44,5 +44,5 @@ interface IGuardCallbackModule {
    * @notice Initates the module by setting the guard.
    */
 
-  function setModulesGuard() external;
+  function setGuard() external;
 }

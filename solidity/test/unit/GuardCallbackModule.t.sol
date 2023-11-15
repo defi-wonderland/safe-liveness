@@ -32,7 +32,7 @@ abstract contract Base is Test {
 }
 
 contract UnitGuardCallbackModuel is Base {
-  function testSetModulesGuard() public {
+  function testSetGuard() public {
     bytes memory _txData = abi.encodeWithSelector(
       ISafe.execTransactionFromModule.selector,
       address(_fakeSafe),
@@ -42,7 +42,7 @@ contract UnitGuardCallbackModuel is Base {
     );
     vm.prank(address(_fakeSafe));
     vm.expectCall(address(_fakeSafe), _txData);
-    _guardCallbackModule.setModulesGuard();
+    _guardCallbackModule.setGuard();
   }
 
   function testSaveUpdatedSettingsMakesCall() public {
