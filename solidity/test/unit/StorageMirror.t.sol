@@ -1,18 +1,22 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity >=0.8.4 <0.9.0;
 
-import {DSTestFull} from '../utils/DSTestFull.sol';
+import {Test} from 'forge-std/Test.sol';
 import {StorageMirror} from 'contracts/StorageMirror.sol';
 import {IStorageMirror} from 'interfaces/IStorageMirror.sol';
 
-abstract contract Base is DSTestFull {
-  address internal _safe = _label('safe');
-
-  StorageMirror internal _storageMirror = new StorageMirror();
-
+abstract contract Base is Test {
   event SettingsUpdated(
     address indexed _safe, bytes32 indexed _settingsHash, IStorageMirror.SafeSettings _safeSettings
   );
+
+  address public safe;
+  StorageMirror public storageMirror;
+
+  function setUp() public {
+    safe = makeAddr('safe');
+    storageMirror = new StorageMirror();
+  }
 }
 
 contract UnitStorageMirror is Base {
@@ -23,11 +27,11 @@ contract UnitStorageMirror is Base {
     IStorageMirror.SafeSettings memory _safeSettings =
       IStorageMirror.SafeSettings({owners: _owners, threshold: _threshold});
 
-    vm.prank(_safe);
-    _storageMirror.update(_safeSettings);
+    vm.prank(safe);
+    storageMirror.update(_safeSettings);
 
     bytes32 _settingsHash = keccak256(abi.encode(_safeSettings));
-    bytes32 _savedHash = _storageMirror.latestSettingsHash(_safe);
+    bytes32 _savedHash = storageMirror.latestSettingsHash(safe);
 
     assertEq(_settingsHash, _savedHash, 'Settings hash should be saved');
   }
@@ -41,9 +45,9 @@ contract UnitStorageMirror is Base {
 
     bytes32 _expectedSettingsHash = keccak256(abi.encode(_safeSettings));
 
-    vm.prank(_safe);
+    vm.prank(safe);
     vm.expectEmit(true, true, true, true);
-    emit SettingsUpdated(_safe, _expectedSettingsHash, _safeSettings);
-    _storageMirror.update(_safeSettings);
+    emit SettingsUpdated(safe, _expectedSettingsHash, _safeSettings);
+    storageMirror.update(_safeSettings);
   }
 }

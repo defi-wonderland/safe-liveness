@@ -191,6 +191,15 @@
   dependencies:
     "@jridgewell/trace-mapping" "0.3.9"
 
+"@defi-wonderland/solidity-utils@0.0.0-3e9c8e8b":
+  version "0.0.0-3e9c8e8b"
+  resolved "https://registry.yarnpkg.com/@defi-wonderland/solidity-utils/-/solidity-utils-0.0.0-3e9c8e8b.tgz#1f9c47506e1679ea36d0854e9aa69bd210af4da0"
+  integrity sha512-HCN5TTO58jTrLrAcxXwTPm++P0u4dMDnwVkssszoEu0SmVKwegzZOdoA+gNbfOjjYydph+3+9bAZbNXj+UK2rg==
+  dependencies:
+    "@openzeppelin/contracts" "4.9.2"
+    ds-test "https://github.com/dapphub/ds-test"
+    forge-std "https://github.com/foundry-rs/forge-std"
+
 "@jridgewell/resolve-uri@^3.0.3":
   version "3.1.1"
   resolved "https://registry.yarnpkg.com/@jridgewell/resolve-uri/-/resolve-uri-3.1.1.tgz#c08679063f279615a3326583ba3a90d1d82cc721"
@@ -229,6 +238,11 @@
   dependencies:
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
+
+"@openzeppelin/contracts@4.9.2":
+  version "4.9.2"
+  resolved "https://registry.yarnpkg.com/@openzeppelin/contracts/-/contracts-4.9.2.tgz#1cb2d5e4d3360141a17dbc45094a8cad6aac16c1"
+  integrity sha512-mO+y6JaqXjWeMh9glYVzVu8HYPGknAAnWyxTRhGeckOruyXQMNnlcW6w/Dx9ftLeIQk6N+ZJFuVmTwF7lEIFrg==
 
 "@solidity-parser/parser@^0.13.2":
   version "0.13.2"
@@ -791,6 +805,10 @@ dot-prop@^5.1.0:
   version "1.0.0"
   resolved "https://codeload.github.com/dapphub/ds-test/tar.gz/e282159d5170298eb2455a6c05280ab5a73a4ef0"
 
+"ds-test@https://github.com/dapphub/ds-test":
+  version "1.0.0"
+  resolved "https://github.com/dapphub/ds-test#e282159d5170298eb2455a6c05280ab5a73a4ef0"
+
 eastasianwidth@^0.2.0:
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/eastasianwidth/-/eastasianwidth-0.2.0.tgz#696ce2ec0aa0e6ea93a397ffcf24aa7840c827cb"
@@ -1064,6 +1082,10 @@ flatted@^2.0.0:
 "forge-std@github:foundry-rs/forge-std#v1.5.6":
   version "1.5.6"
   resolved "https://codeload.github.com/foundry-rs/forge-std/tar.gz/e8a047e3f40f13fa37af6fe14e6e06283d9a060e"
+
+"forge-std@https://github.com/foundry-rs/forge-std":
+  version "1.7.2"
+  resolved "https://github.com/foundry-rs/forge-std#bdea49f9bb3c58c8c35850c3bdc17eaeea756e9a"
 
 fs-extra@^11.0.0:
   version "11.1.1"
@@ -2086,6 +2108,10 @@ safe-buffer@~5.2.0:
   version "5.2.1"
   resolved "https://registry.yarnpkg.com/safe-buffer/-/safe-buffer-5.2.1.tgz#1eaf9fa9bdb1fdd4ec75f58f9cdb4e6b7827eec6"
   integrity sha512-rp3So07KcdmmKbGvgaNxQSJr7bGVSVk5S9Eq1F+ppbRo70+YeaDxkw5Dd8NPN+GD6bjnYm2VuPuCXmpuYvmCXQ==
+
+"safe-contracts@github:safe-global/safe-contracts#v1.4.1":
+  version "1.4.1"
+  resolved "https://codeload.github.com/safe-global/safe-contracts/tar.gz/bf943f80fec5ac647159d26161446ac5d716a294"
 
 "safer-buffer@>= 2.1.2 < 3":
   version "2.1.2"

@@ -1,15 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity =0.8.19;
 
-import {DSTestFull} from 'test/utils/DSTestFull.sol';
-import {console} from 'forge-std/console.sol';
+import {DSTestPlus} from '@defi-wonderland/solidity-utils/solidity/test/DSTestPlus.sol';
 import {IERC20} from 'isolmate/interfaces/tokens/IERC20.sol';
 
-contract CommonE2EBase is DSTestFull {
+contract CommonE2EBase is DSTestPlus {
   uint256 internal constant _FORK_BLOCK = 15_452_788;
 
-  address internal _user = _label('user');
-  address internal _owner = _label('owner');
+  address internal _user = makeAddr('user');
+  address internal _owner = makeAddr('owner');
 
   function setUp() public {
     vm.createSelectFork(vm.rpcUrl('mainnet'), _FORK_BLOCK);
