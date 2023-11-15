@@ -5,26 +5,26 @@ import {SafeProxy} from 'safe-contracts/proxies/SafeProxy.sol';
 import {IProxyCreationCallback} from 'safe-contracts/proxies/IProxyCreationCallback.sol';
 
 interface IGnosisSafeProxyFactory {
-  event ProxyCreation(SafeProxy proxy, address singleton);
+  event ProxyCreation(SafeProxy _proxy, address _singleton);
 
-  function createProxy(address singleton, bytes memory data) external returns (SafeProxy proxy);
+  function createProxy(address _singleton, bytes memory _data) external returns (SafeProxy _proxy);
 
   function createProxyWithNonce(
     address _singleton,
-    bytes memory initializer,
-    uint256 saltNonce
-  ) external returns (SafeProxy proxy);
+    bytes memory _initializer,
+    uint256 _saltNonce
+  ) external returns (SafeProxy _proxy);
 
   function createProxyWithCallback(
     address _singleton,
-    bytes memory initializer,
-    uint256 saltNonce,
-    IProxyCreationCallback callback
-  ) external returns (SafeProxy proxy);
+    bytes memory _initializer,
+    uint256 _saltNonce,
+    IProxyCreationCallback _callback
+  ) external returns (SafeProxy _proxy);
 
   function calculateCreateProxyWithNonceAddress(
     address _singleton,
-    bytes calldata initializer,
-    uint256 saltNonce
-  ) external returns (SafeProxy proxy);
+    bytes calldata _initializer,
+    uint256 _saltNonce
+  ) external returns (SafeProxy _proxy);
 }

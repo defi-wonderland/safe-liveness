@@ -13,9 +13,9 @@ import {TestConstants} from 'test/TestConstants.sol';
 contract CommonE2EBase is DSTestPlus, TestConstants {
   uint256 internal constant _FORK_BLOCK = 15_452_788;
 
-  address deployer = makeAddr('deployer');
-  address safeOwner = makeAddr('safeOwner');
-  address proposer = makeAddr('proposer');
+  address public deployer = makeAddr('deployer');
+  address public safeOwner = makeAddr('safeOwner');
+  address public proposer = makeAddr('proposer');
 
   StorageMirror public storageMirror;
   UpdateStorageMirrorGuard public updateStorageMirrorGuard;
