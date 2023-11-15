@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity >=0.8.4 <0.9.0;
 
-import {DSTestFull} from '../utils/DSTestFull.sol';
+import {Test} from 'forge-std/Test.sol';
 import {GuardCallbackModule, IGuardCallbackModule} from 'contracts/GuardCallbackModule.sol';
 import {IStorageMirror} from 'interfaces/IStorageMirror.sol';
 import {ISafe} from 'interfaces/ISafe.sol';
@@ -20,9 +20,9 @@ contract FakeSafe {
   }
 }
 
-abstract contract Base is DSTestFull {
-  address internal _guard = _label('guard');
-  address internal _storageMirror = _label('storageMirror');
+abstract contract Base is Test {
+  address internal _guard = makeAddr('guard');
+  address internal _storageMirror = makeAddr('storageMirror');
 
   GuardCallbackModule internal _guardCallbackModule = new GuardCallbackModule(_storageMirror, _guard);
   FakeSafe internal _fakeSafe = new FakeSafe();

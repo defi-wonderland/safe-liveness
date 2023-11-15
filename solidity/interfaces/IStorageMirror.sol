@@ -13,7 +13,6 @@ interface IStorageMirror {
    * @param _settingsHash The hash of the settings
    * @param _safeSettings The plaintext of the settings
    */
-
   event SettingsUpdated(address indexed _safe, bytes32 indexed _settingsHash, SafeSettings _safeSettings);
 
   /*///////////////////////////////////////////////////////////////

@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity =0.8.19;
 
-import {IStorageMirror} from 'interfaces/IStorageMirror.sol';
-
 interface IGuardCallbackModule {
   /*///////////////////////////////////////////////////////////////
                             ERRORS
