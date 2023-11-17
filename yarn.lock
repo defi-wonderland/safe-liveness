@@ -314,6 +314,10 @@ JSONStream@^1.0.4:
     jsonparse "^1.2.0"
     through ">=2.2.7 <3"
 
+"Solidity-RLP@github:hamdiallam/Solidity-RLP":
+  version "2.0.8"
+  resolved "https://codeload.github.com/hamdiallam/Solidity-RLP/tar.gz/0212f8e754471da67fc5387df7855f47f944f925"
+
 acorn-jsx@^5.0.0:
   version "5.3.2"
   resolved "https://registry.yarnpkg.com/acorn-jsx/-/acorn-jsx-5.3.2.tgz#7ed5bb55908b3b2f1bc55c6af1653bada7f07937"
