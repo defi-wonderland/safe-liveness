@@ -18,13 +18,11 @@ interface IGuardCallbackModule {
   /**
    * @notice The address of the StorageMirror contract.
    */
-
   function STORAGE_MIRROR() external view returns (address _storageMirror);
 
   /**
    * @notice The address of the UpdateStorageMirrorGuard contract.
    */
-
   function GUARD() external view returns (address _guard);
 
   /*///////////////////////////////////////////////////////////////
@@ -37,12 +35,10 @@ interface IGuardCallbackModule {
    * @param _safe The address of the safe.
    * @param _settingsHash The hash of the new settings for the safe.
    */
-
   function saveUpdatedSettings(address _safe, bytes32 _settingsHash) external;
 
   /**
    * @notice Initates the module by setting the guard.
    */
-
   function setGuard() external;
 }

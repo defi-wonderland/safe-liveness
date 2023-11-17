@@ -23,7 +23,6 @@ contract GuardCallbackModule is IGuardCallbackModule {
   /**
    * @notice Initates the module by setting the guard.
    */
-
   function setGuard() external {
     ISafe(msg.sender).execTransactionFromModule(
       msg.sender, 0, abi.encodeWithSelector(ISafe.setGuard.selector, GUARD), Enum.Operation.Call
@@ -36,7 +35,6 @@ contract GuardCallbackModule is IGuardCallbackModule {
    * @param _safe The address of the safe.
    * @param _settingsHash The hash of the new settings for the safe.
    */
-
   function saveUpdatedSettings(address _safe, bytes32 _settingsHash) external {
     if (msg.sender != GUARD) revert OnlyGuard();
     bytes memory _txData = abi.encodeWithSelector(IStorageMirror.update.selector, _settingsHash);
