@@ -5,11 +5,15 @@ import {DSTestPlus} from '@defi-wonderland/solidity-utils/solidity/test/DSTestPl
 import {IERC20} from 'isolmate/interfaces/tokens/IERC20.sol';
 import {SafeProxy} from 'safe-contracts/proxies/SafeProxy.sol';
 import {Enum} from 'safe-contracts/common/Enum.sol';
+
 import {StorageMirror} from 'contracts/StorageMirror.sol';
 import {UpdateStorageMirrorGuard} from 'contracts/UpdateStorageMirrorGuard.sol';
 import {GuardCallbackModule} from 'contracts/GuardCallbackModule.sol';
+import {MockOracle} from 'contracts/MockOracle.sol';
+
 import {IGuardCallbackModule} from 'interfaces/IGuardCallbackModule.sol';
 import {ISafe} from 'interfaces/ISafe.sol';
+
 import {IGnosisSafeProxyFactory} from 'test/e2e/IGnosisSafeProxyFactory.sol';
 import {TestConstants} from 'test/utils/TestConstants.sol';
 import {ContractDeploymentAddress} from 'test/utils/ContractDeploymentAddress.sol';
@@ -25,6 +29,7 @@ contract CommonE2EBase is DSTestPlus, TestConstants {
   StorageMirror public storageMirror;
   UpdateStorageMirrorGuard public updateStorageMirrorGuard;
   GuardCallbackModule public guardCallbackModule;
+  MockOracle public oracle;
   ISafe public safe;
   IGnosisSafeProxyFactory public gnosisSafeProxyFactory = IGnosisSafeProxyFactory(GNOSIS_SAFE_PROXY_FACTORY);
 
@@ -51,6 +56,10 @@ contract CommonE2EBase is DSTestPlus, TestConstants {
     vm.prank(deployer);
     updateStorageMirrorGuard = new UpdateStorageMirrorGuard(guardCallbackModule); // deployer nonce 2
     label(address(updateStorageMirrorGuard), 'UpdateStorageMirrorGuard');
+
+    vm.prank(deployer);
+    oracle = new MockOracle(); // deployer nonce 3
+    label(address(oracle), 'MockOracle');
 
     // Make sure the theoritical address was calculated correctly
     assert(address(updateStorageMirrorGuard) == _updateStorageMirrorGuardTheoriticalAddress);
