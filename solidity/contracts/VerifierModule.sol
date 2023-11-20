@@ -68,6 +68,16 @@ contract VerifierModule is IVerifierModule {
     BLOCK_HEADER_ORACLE = IBlockHeaderOracle(_blockHeaderOracle);
   }
 
+  /**
+   * @notice Sets the storage mirror storage root in the registry, verifies it, and then updates the safe in one call
+   *
+   * @param _safe The address of the safe that has new settings
+   * @param _proposedSettings The new settings that are being proposed
+   * @param _storageMirrorAccountProof The account proof of the StorageMirror contract on the home chain
+   * @param _storageMirrorStorageProof The storage proof of the StorageMirror contract on the home chain
+   * @param _arbitraryTxnParams The transaction parameters for the arbitrary safe transaction that will execute
+   */
+
   function extractStorageRootAndVerifyUpdate(
     address _safe,
     IStorageMirror.SafeSettings calldata _proposedSettings,
@@ -75,29 +85,8 @@ contract VerifierModule is IVerifierModule {
     bytes memory _storageMirrorStorageProof,
     SafeTxnParams calldata _arbitraryTxnParams
   ) external {
-    bytes32 _storageRoot = _extractStorageMirrorStorageRoot(_storageMirrorAccountProof);
-
-    bytes32 _hashedProposedSettings = _verifyNewSettings(_safe, _proposedSettings, _storageMirrorStorageProof);
-
-    // If we dont revert from the _verifyNewSettings() call, then we can update the safe
-
-    _updateLatestVerifiedSettings(_safe, _proposedSettings);
-
-    // Call the arbitrary transaction
-    ISafe(_safe).execTransaction(
-      _arbitraryTxnParams.to,
-      _arbitraryTxnParams.value,
-      _arbitraryTxnParams.data,
-      _arbitraryTxnParams.operation,
-      _arbitraryTxnParams.safeTxGas,
-      _arbitraryTxnParams.baseGas,
-      _arbitraryTxnParams.gasPrice,
-      _arbitraryTxnParams.gasToken,
-      _arbitraryTxnParams.refundReceiver,
-      _arbitraryTxnParams.signatures
-    );
-
-    // Pay incentives
+    STORAGE_MIRROR_ROOT_REGISTRY.proposeAndVerifyStorageMirrorStorageRoot(_storageMirrorAccountProof);
+    _proposeAndVerifyUpdate(_safe, _proposedSettings, _storageMirrorStorageProof, _arbitraryTxnParams);
   }
 
   /**
@@ -115,6 +104,48 @@ contract VerifierModule is IVerifierModule {
     bytes memory _storageMirrorStorageProof,
     SafeTxnParams calldata _arbitraryTxnParams
   ) external {
+    _proposeAndVerifyUpdate(_safe, _proposedSettings, _storageMirrorStorageProof, _arbitraryTxnParams);
+  }
+
+  /**
+   * @notice The function extracts the storage root of the StorageMirror contract from a given account proof
+   *
+   * @param _storageMirrorAccountProof The account proof of the StorageMirror contract from the latest block
+   */
+
+  function extractStorageMirrorStorageRoot(bytes memory _storageMirrorAccountProof)
+    external
+    view
+    returns (bytes32 _storageRoot)
+  {
+    (bytes memory _blockHeader,) = BLOCK_HEADER_ORACLE.getLatestBlockHeader();
+
+    StateVerifier.BlockHeader memory _parsedBlockHeader = StateVerifier.verifyBlockHeader(_blockHeader);
+
+    bytes memory _rlpAccount = MerklePatriciaProofVerifier.extractProofValue(
+      _parsedBlockHeader.stateRootHash,
+      abi.encodePacked(keccak256(abi.encode(STORAGE_MIRROR))),
+      _storageMirrorAccountProof.toRlpItem().toList()
+    );
+
+    _storageRoot = StateVerifier.extractStorageRootFromAccount(_rlpAccount);
+  }
+
+  /**
+   * @notice Verifies the new settings that are incoming against a storage proof from the StorageMirror on the home chain
+   *
+   * @param _safe The address of the safe that has new settings
+   * @param _proposedSettings The new settings that are being proposed
+   * @param _storageMirrorStorageProof The storage proof of the StorageMirror contract on the home chain
+   * @param _arbitraryTxnParams The transaction parameters for the arbitrary safe transaction that will execute
+   */
+
+  function _proposeAndVerifyUpdate(
+    address _safe,
+    IStorageMirror.SafeSettings calldata _proposedSettings,
+    bytes memory _storageMirrorStorageProof,
+    SafeTxnParams calldata _arbitraryTxnParams
+  ) internal {
     bytes32 _hashedProposedSettings = _verifyNewSettings(_safe, _proposedSettings, _storageMirrorStorageProof);
 
     // If we dont revert from the _verifyNewSettings() call, then we can update the safe
@@ -144,44 +175,6 @@ contract VerifierModule is IVerifierModule {
     latestVerifiedSettingsTimestamp[_safe] = block.timestamp;
 
     emit VerifiedUpdate(_safe, _hashedProposedSettings);
-  }
-
-  /**
-   * @notice The function extracts the storage root of the StorageMirror contract from a given account proof
-   *
-   * @param _storageMirrorAccountProof The account proof of the StorageMirror contract from the latest block
-   */
-
-  function extractStorageMirrorStorageRoot(bytes memory _storageMirrorAccountProof)
-    external
-    view
-    returns (bytes32 _storageRoot)
-  {
-    _storageRoot = _extractStorageMirrorStorageRoot(_storageMirrorAccountProof);
-  }
-
-  /**
-   * @notice The function extracts the storage root of the StorageMirror contract from a given account proof
-   *
-   * @param _storageMirrorAccountProof The account proof of the StorageMirror contract from the latest block
-   */
-
-  function _extractStorageMirrorStorageRoot(bytes memory _storageMirrorAccountProof)
-    internal
-    view
-    returns (bytes32 _storageRoot)
-  {
-    (bytes memory _blockHeader,) = BLOCK_HEADER_ORACLE.getLatestBlockHeader();
-
-    StateVerifier.BlockHeader memory _parsedBlockHeader = StateVerifier.verifyBlockHeader(_blockHeader);
-
-    bytes memory _rlpAccount = MerklePatriciaProofVerifier.extractProofValue(
-      _parsedBlockHeader.stateRootHash,
-      abi.encodePacked(keccak256(abi.encode(STORAGE_MIRROR))),
-      _storageMirrorAccountProof.toRlpItem().toList()
-    );
-
-    _storageRoot = StateVerifier.extractStorageRootFromAccount(_rlpAccount);
   }
 
   /**

@@ -121,4 +121,22 @@ interface IVerifierModule {
     bytes memory _storageMirrorStorageProof,
     SafeTxnParams calldata _arbitraryTxnParams
   ) external;
+
+  /**
+   * @notice Sets the storage mirror storage root in the registry, verifies it, and then updates the safe in one call
+   *
+   * @param _safe The address of the safe that has new settings
+   * @param _proposedSettings The new settings that are being proposed
+   * @param _storageMirrorAccountProof The account proof of the StorageMirror contract on the home chain
+   * @param _storageMirrorStorageProof The storage proof of the StorageMirror contract on the home chain
+   * @param _arbitraryTxnParams The transaction parameters for the arbitrary safe transaction that will execute
+   */
+
+  function extractStorageRootAndVerifyUpdate(
+    address _safe,
+    IStorageMirror.SafeSettings calldata _proposedSettings,
+    bytes memory _storageMirrorAccountProof,
+    bytes memory _storageMirrorStorageProof,
+    SafeTxnParams calldata _arbitraryTxnParams
+  ) external;
 }

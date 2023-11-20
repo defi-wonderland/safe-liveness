@@ -22,7 +22,4 @@ interface IStorageMirrorRootRegistry {
    * @param _accountProof The account proof of the StorageMirror contract in Home chain
    */
   function proposeAndVerifyStorageMirrorStorageRoot(bytes memory _accountProof) external;
-  /**
-   * @notice The function that queries the latest L1 block header
-   */
 }
