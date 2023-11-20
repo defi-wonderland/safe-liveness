@@ -2,19 +2,19 @@
 pragma solidity >=0.8.4 <0.9.0;
 
 import {Test} from 'forge-std/Test.sol';
-import {MockOracle} from 'contracts/MockOracle.sol';
+import {BlockHeaderOracle} from 'contracts/BlockHeaderOracle.sol';
 
 abstract contract Base is Test {
   event BlockHeaderUpdated(bytes _blockHeader, uint256 _blockTimestamp, uint256 _blockNumber);
 
-  MockOracle public oracle;
+  BlockHeaderOracle public oracle;
 
   function setUp() public {
-    oracle = new MockOracle();
+    oracle = new BlockHeaderOracle();
   }
 }
 
-contract UnitMockOracle is Base {
+contract UnitBlockHeaderOracle is Base {
   function testUpdateBlockHeader(bytes memory _blockHeader, uint256 _blockTimestamp, uint256 _blockNumber) public {
     vm.expectEmit(true, true, true, true);
     emit BlockHeaderUpdated(_blockHeader, _blockTimestamp, _blockNumber);

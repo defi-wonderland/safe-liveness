@@ -9,7 +9,7 @@ import {Enum} from 'safe-contracts/common/Enum.sol';
 import {StorageMirror} from 'contracts/StorageMirror.sol';
 import {UpdateStorageMirrorGuard} from 'contracts/UpdateStorageMirrorGuard.sol';
 import {GuardCallbackModule} from 'contracts/GuardCallbackModule.sol';
-import {MockOracle} from 'contracts/MockOracle.sol';
+import {BlockHeaderOracle} from 'contracts/BlockHeaderOracle.sol';
 
 import {IGuardCallbackModule} from 'interfaces/IGuardCallbackModule.sol';
 import {ISafe} from 'interfaces/ISafe.sol';
@@ -29,7 +29,7 @@ contract CommonE2EBase is DSTestPlus, TestConstants {
   StorageMirror public storageMirror;
   UpdateStorageMirrorGuard public updateStorageMirrorGuard;
   GuardCallbackModule public guardCallbackModule;
-  MockOracle public oracle;
+  BlockHeaderOracle public oracle;
   ISafe public safe;
   IGnosisSafeProxyFactory public gnosisSafeProxyFactory = IGnosisSafeProxyFactory(GNOSIS_SAFE_PROXY_FACTORY);
 
@@ -58,7 +58,7 @@ contract CommonE2EBase is DSTestPlus, TestConstants {
     label(address(updateStorageMirrorGuard), 'UpdateStorageMirrorGuard');
 
     vm.prank(deployer);
-    oracle = new MockOracle(); // deployer nonce 3
+    oracle = new BlockHeaderOracle(); // deployer nonce 3
     label(address(oracle), 'MockOracle');
 
     // Make sure the theoritical address was calculated correctly
