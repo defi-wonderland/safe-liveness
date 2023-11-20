@@ -102,26 +102,26 @@ interface ISafe {
   /**
    * @notice Removes the owner `owner` from the Safe and updates the threshold to `_threshold`.
    * @dev This can only be done via a Safe transaction.
-   * @param prevOwner Owner that pointed to the owner to be removed in the linked list
-   * @param owner Owner address to be removed.
+   * @param _prevOwner Owner that pointed to the owner to be removed in the linked list
+   * @param _owner Owner address to be removed.
    * @param _threshold New threshold.
    */
-  function removeOwner(address prevOwner, address owner, uint256 _threshold) external;
+  function removeOwner(address _prevOwner, address _owner, uint256 _threshold) external;
 
   /**
    * @notice Replaces the owner `oldOwner` in the Safe with `newOwner`.
    * @dev This can only be done via a Safe transaction.
-   * @param prevOwner Owner that pointed to the owner to be replaced in the linked list
-   * @param oldOwner Owner address to be replaced.
-   * @param newOwner New owner address.
+   * @param _prevOwner Owner that pointed to the owner to be replaced in the linked list
+   * @param _oldOwner Owner address to be replaced.
+   * @param _newOwner New owner address.
    */
-  function swapOwner(address prevOwner, address oldOwner, address newOwner) external;
+  function swapOwner(address _prevOwner, address _oldOwner, address _newOwner) external;
 
   /**
    * @notice Returns if `owner` is an owner of the Safe.
-   * @return Boolean if owner is an owner of the Safe.
+   * @return _result if owner is an owner of the Safe.
    */
-  function isOwner(address owner) external view returns (bool);
+  function isOwner(address _owner) external view returns (bool _result);
 
   /**
    * @notice Returns the nonce of the safe
