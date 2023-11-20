@@ -6,6 +6,7 @@ import {MerklePatriciaProofVerifier} from 'libraries/MerklePatriciaProofVerifier
 import {StateVerifier} from 'libraries/StateVerifier.sol';
 import {RLPReader} from 'solidity-rlp/contracts/RLPReader.sol';
 import {IStorageMirrorRootRegistry} from 'interfaces/IStorageMirrorRootRegistry.sol';
+import {IBlockHeaderOracle} from 'interfaces/IBlockHeaderOracle.sol';
 import {IVerifierModule} from 'interfaces/IVerifierModule.sol';
 import {ISafe} from 'interfaces/ISafe.sol';
 import {Enum} from 'safe-contracts/common/Enum.sol';
@@ -32,10 +33,16 @@ contract VerifierModule is IVerifierModule {
   uint256 internal constant _LATEST_VERIFIED_SETTINGS_SLOT = 0;
 
   /**
-   * @notice The address of the StorageMirrorRootRegistry contract
+   * @notice The interface of the StorageMirrorRootRegistry contract
    */
 
   IStorageMirrorRootRegistry public immutable STORAGE_MIRROR_ROOT_REGISTRY;
+
+  /**
+   * @notice The interface of the block header oracle contract
+   */
+
+  IBlockHeaderOracle public immutable BLOCK_HEADER_ORACLE;
 
   /**
    * @notice The address of the StorageMirror contract on the home chain
@@ -55,9 +62,10 @@ contract VerifierModule is IVerifierModule {
 
   mapping(address => uint256) public latestVerifiedSettingsTimestamp;
 
-  constructor(address _storageMirrorRootRegistry, address _storageMirror) payable {
+  constructor(address _storageMirrorRootRegistry, address _storageMirror, address _blockHeaderOracle) payable {
     STORAGE_MIRROR_ROOT_REGISTRY = IStorageMirrorRootRegistry(_storageMirrorRootRegistry);
     STORAGE_MIRROR = _storageMirror;
+    BLOCK_HEADER_ORACLE = IBlockHeaderOracle(_blockHeaderOracle);
   }
 
   /**
@@ -117,7 +125,7 @@ contract VerifierModule is IVerifierModule {
     view
     returns (bytes32 _storageRoot)
   {
-    (bytes memory _blockHeader,) = IStorageMirrorRootRegistry(STORAGE_MIRROR_ROOT_REGISTRY).getLatestBlockHeader();
+    (bytes memory _blockHeader,) = BLOCK_HEADER_ORACLE.getLatestBlockHeader();
 
     StateVerifier.BlockHeader memory _parsedBlockHeader = StateVerifier.verifyBlockHeader(_blockHeader);
 

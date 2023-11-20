@@ -3,6 +3,7 @@ pragma solidity =0.8.19;
 
 import {IStorageMirror} from 'interfaces/IStorageMirror.sol';
 import {IStorageMirrorRootRegistry} from 'interfaces/IStorageMirrorRootRegistry.sol';
+import {IBlockHeaderOracle} from 'interfaces/IBlockHeaderOracle.sol';
 import {Enum} from 'safe-contracts/common/Enum.sol';
 
 interface IVerifierModule {
@@ -63,6 +64,14 @@ interface IVerifierModule {
    */
 
   function STORAGE_MIRROR_ROOT_REGISTRY() external view returns (IStorageMirrorRootRegistry _storageMirrorRootRegistry);
+
+  /**
+   * @notice The interface of the BlockHeaderOracle contract.
+   *
+   * @return _blockHeaderOracle The interface of the BlockHeaderOracle contract.
+   */
+
+  function BLOCK_HEADER_ORACLE() external view returns (IBlockHeaderOracle _blockHeaderOracle);
 
   /**
    * @notice The hash of the latest verified settings for a given safe

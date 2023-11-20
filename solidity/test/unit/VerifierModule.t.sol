@@ -44,8 +44,9 @@ contract TestVerifierModule is VerifierModule {
   constructor(
     address _storageMirrorRootRegistry,
     address _storageMirror,
-    TestMPT _testMPT
-  ) VerifierModule(_storageMirrorRootRegistry, _storageMirror) {
+    TestMPT _testMPT,
+    address _oracle
+  ) VerifierModule(_storageMirrorRootRegistry, _storageMirror, _oracle) {
     mpt = _testMPT;
   }
 
@@ -124,7 +125,7 @@ contract TestVerifierModule is VerifierModule {
     view
     returns (bytes32 _storageRoot)
   {
-    (bytes memory _blockHeader,) = IStorageMirrorRootRegistry(STORAGE_MIRROR_ROOT_REGISTRY).getLatestBlockHeader();
+    (bytes memory _blockHeader,) = BLOCK_HEADER_ORACLE.getLatestBlockHeader();
 
     StateVerifier.BlockHeader memory _parsedBlockHeader = mpt.verifyBlockHeader(_blockHeader);
 
@@ -142,9 +143,11 @@ abstract contract Base is Test {
   address internal _storageMirrorRegistry = makeAddr('storageMirrorRegistry');
   address internal _storageMirror = makeAddr('storageMirror');
   address internal _fakeSafe = makeAddr('fakeSafe');
+  address internal _oracle = makeAddr('oracle');
 
   TestMPT public mpt = new TestMPT();
-  TestVerifierModule public verifierModule = new TestVerifierModule(_storageMirrorRegistry, _storageMirror, mpt);
+  TestVerifierModule public verifierModule =
+    new TestVerifierModule(_storageMirrorRegistry, _storageMirror, mpt, _oracle);
 
   event VerifiedUpdate(address _safe, bytes32 _verifiedHash);
 }
@@ -728,7 +731,7 @@ contract UnitStorageRoot is Base {
     bytes memory _rlpHeader = abi.encodePacked(_fakeHeader.hash);
 
     vm.mockCall(
-      _storageMirrorRegistry,
+      _oracle,
       abi.encodeWithSelector(IStorageMirrorRootRegistry.getLatestBlockHeader.selector),
       abi.encode(_rlpHeader, uint256(1_234_567_890))
     );
