@@ -4,6 +4,7 @@ pragma solidity >=0.8.4 <0.9.0;
 import {Test} from 'forge-std/Test.sol';
 import {VerifierModule, IVerifierModule} from 'contracts/VerifierModule.sol';
 import {IStorageMirror} from 'interfaces/IStorageMirror.sol';
+import {IBlockHeaderOracle} from 'interfaces/IBlockHeaderOracle.sol';
 import {ISafe} from 'interfaces/ISafe.sol';
 import {Enum} from 'safe-contracts/common/Enum.sol';
 import {IStorageMirrorRootRegistry} from 'interfaces/IStorageMirrorRootRegistry.sol';
@@ -732,7 +733,7 @@ contract UnitStorageRoot is Base {
 
     vm.mockCall(
       _oracle,
-      abi.encodeWithSelector(IStorageMirrorRootRegistry.getLatestBlockHeader.selector),
+      abi.encodeWithSelector(IBlockHeaderOracle.getLatestBlockHeader.selector),
       abi.encode(_rlpHeader, uint256(1_234_567_890))
     );
 

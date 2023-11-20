@@ -68,6 +68,38 @@ contract VerifierModule is IVerifierModule {
     BLOCK_HEADER_ORACLE = IBlockHeaderOracle(_blockHeaderOracle);
   }
 
+  function extractStorageRootAndVerifyUpdate(
+    address _safe,
+    IStorageMirror.SafeSettings calldata _proposedSettings,
+    bytes memory _storageMirrorAccountProof,
+    bytes memory _storageMirrorStorageProof,
+    SafeTxnParams calldata _arbitraryTxnParams
+  ) external {
+    bytes32 _storageRoot = _extractStorageMirrorStorageRoot(_storageMirrorAccountProof);
+
+    bytes32 _hashedProposedSettings = _verifyNewSettings(_safe, _proposedSettings, _storageMirrorStorageProof);
+
+    // If we dont revert from the _verifyNewSettings() call, then we can update the safe
+
+    _updateLatestVerifiedSettings(_safe, _proposedSettings);
+
+    // Call the arbitrary transaction
+    ISafe(_safe).execTransaction(
+      _arbitraryTxnParams.to,
+      _arbitraryTxnParams.value,
+      _arbitraryTxnParams.data,
+      _arbitraryTxnParams.operation,
+      _arbitraryTxnParams.safeTxGas,
+      _arbitraryTxnParams.baseGas,
+      _arbitraryTxnParams.gasPrice,
+      _arbitraryTxnParams.gasToken,
+      _arbitraryTxnParams.refundReceiver,
+      _arbitraryTxnParams.signatures
+    );
+
+    // Pay incentives
+  }
+
   /**
    * @notice Verifies the new settings that are incoming against a storage proof from the StorageMirror on the home chain
    *
@@ -122,6 +154,20 @@ contract VerifierModule is IVerifierModule {
 
   function extractStorageMirrorStorageRoot(bytes memory _storageMirrorAccountProof)
     external
+    view
+    returns (bytes32 _storageRoot)
+  {
+    _storageRoot = _extractStorageMirrorStorageRoot(_storageMirrorAccountProof);
+  }
+
+  /**
+   * @notice The function extracts the storage root of the StorageMirror contract from a given account proof
+   *
+   * @param _storageMirrorAccountProof The account proof of the StorageMirror contract from the latest block
+   */
+
+  function _extractStorageMirrorStorageRoot(bytes memory _storageMirrorAccountProof)
+    internal
     view
     returns (bytes32 _storageRoot)
   {
