@@ -2,8 +2,15 @@
 pragma solidity =0.8.19;
 
 import {IStorageMirror} from 'interfaces/IStorageMirror.sol';
+import {Enum} from 'safe-contracts/common/Enum.sol';
 
 interface IVerifierModule {
+  /*///////////////////////////////////////////////////////////////
+                            EVENTS
+  //////////////////////////////////////////////////////////////*/
+
+  event VerifiedUpdate(address safe, bytes32 verifiedHash);
+
   /*///////////////////////////////////////////////////////////////
                             ERRORS
   //////////////////////////////////////////////////////////////*/
@@ -18,6 +25,23 @@ interface IVerifierModule {
    */
 
   error BytesToBytes32Failed();
+
+  /*///////////////////////////////////////////////////////////////
+                            STRUCTS
+  //////////////////////////////////////////////////////////////*/
+
+  struct TransactionDetails {
+    address to;
+    uint256 value;
+    bytes data;
+    Enum.Operation operation;
+    uint256 safeTxGas;
+    uint256 baseGas;
+    uint256 gasPrice;
+    address gasToken;
+    address payable refundReceiver;
+    bytes signatures;
+  }
 
   /*///////////////////////////////////////////////////////////////
                             VARIABLES
@@ -40,9 +64,9 @@ interface IVerifierModule {
   //////////////////////////////////////////////////////////////*/
 
   function proposeAndVerifyUpdate(
-    uint256 _updateNonce,
     address _safe,
     IStorageMirror.SafeSettings memory _proposedSettings,
-    bytes memory _storageMirrorStorageProof
+    bytes memory _storageMirrorStorageProof,
+    TransactionDetails calldata _transactionDetails
   ) external;
 }

@@ -200,6 +200,15 @@
     ds-test "https://github.com/dapphub/ds-test"
     forge-std "https://github.com/foundry-rs/forge-std"
 
+"@defi-wonderland/solidity-utils@0.0.0-4298c6c6":
+  version "0.0.0-4298c6c6"
+  resolved "https://registry.yarnpkg.com/@defi-wonderland/solidity-utils/-/solidity-utils-0.0.0-4298c6c6.tgz#4ac9e4bcc586f7434715357310a7a3c30e81f17f"
+  integrity sha512-jpecgVx9hpnXXGnYnN8ayd1ONj4ljk0hI36ltNfkNwlDkLLzPt4/FY5YSyY/628Exfuy5X9Rl9gGv5UtYgAmtw==
+  dependencies:
+    "@openzeppelin/contracts" "4.8.1"
+    ds-test "https://github.com/dapphub/ds-test"
+    forge-std "https://github.com/foundry-rs/forge-std"
+
 "@jridgewell/resolve-uri@^3.0.3":
   version "3.1.1"
   resolved "https://registry.yarnpkg.com/@jridgewell/resolve-uri/-/resolve-uri-3.1.1.tgz#c08679063f279615a3326583ba3a90d1d82cc721"
@@ -238,6 +247,11 @@
   dependencies:
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
+
+"@openzeppelin/contracts@4.8.1":
+  version "4.8.1"
+  resolved "https://registry.yarnpkg.com/@openzeppelin/contracts/-/contracts-4.8.1.tgz#709cfc4bbb3ca9f4460d60101f15dac6b7a2d5e4"
+  integrity sha512-xQ6eUZl+RDyb/FiZe1h+U7qr/f4p/SrTSQcTPH2bjur3C5DbuW/zFgCU/b1P/xcIaEqJep+9ju4xDRi3rmChdQ==
 
 "@openzeppelin/contracts@4.9.2":
   version "4.9.2"
@@ -805,6 +819,11 @@ dot-prop@^5.1.0:
   dependencies:
     is-obj "^2.0.0"
 
+"ds-test@git+https://github.com/dapphub/ds-test.git":
+  version "1.0.0"
+  uid e282159d5170298eb2455a6c05280ab5a73a4ef0
+  resolved "git+https://github.com/dapphub/ds-test.git#e282159d5170298eb2455a6c05280ab5a73a4ef0"
+
 "ds-test@github:dapphub/ds-test#e282159":
   version "1.0.0"
   resolved "https://codeload.github.com/dapphub/ds-test/tar.gz/e282159d5170298eb2455a6c05280ab5a73a4ef0"
@@ -1083,6 +1102,11 @@ flatted@^2.0.0:
   resolved "https://registry.yarnpkg.com/flatted/-/flatted-2.0.2.tgz#4575b21e2bcee7434aa9be662f4b7b5f9c2b5138"
   integrity sha512-r5wGx7YeOwNWNlCA0wQ86zKyDLMQr+/RB8xy74M4hTphfmjlijTSSXGuH8rnvKZnfT9i+75zmd8jcKdMR4O6jA==
 
+"forge-std@git+https://github.com/foundry-rs/forge-std.git":
+  version "1.7.2"
+  uid bdea49f9bb3c58c8c35850c3bdc17eaeea756e9a
+  resolved "git+https://github.com/foundry-rs/forge-std.git#bdea49f9bb3c58c8c35850c3bdc17eaeea756e9a"
+
 "forge-std@github:foundry-rs/forge-std#v1.5.6":
   version "1.5.6"
   resolved "https://codeload.github.com/foundry-rs/forge-std/tar.gz/e8a047e3f40f13fa37af6fe14e6e06283d9a060e"
@@ -1090,6 +1114,15 @@ flatted@^2.0.0:
 "forge-std@https://github.com/foundry-rs/forge-std":
   version "1.7.2"
   resolved "https://github.com/foundry-rs/forge-std#bdea49f9bb3c58c8c35850c3bdc17eaeea756e9a"
+
+foundry-mock-generator@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/foundry-mock-generator/-/foundry-mock-generator-1.0.1.tgz#7473cc24920a65cdd70ed14cc5f6896fc3be76de"
+  integrity sha512-tl9gkhsB8V+FqLjz/WNusuAKDpUXTqbs/KC9roVKaqc7d9oC+2EDLtHRt9bHWEKTE9ocsCs2nH9+r8letnZsLQ==
+  dependencies:
+    "@defi-wonderland/solidity-utils" "0.0.0-4298c6c6"
+    handlebars "4.7.7"
+    yargs "17.7.2"
 
 fs-extra@^11.0.0:
   version "11.1.1"
@@ -1190,6 +1223,18 @@ graceful-fs@^4.1.6, graceful-fs@^4.2.0:
   version "4.2.11"
   resolved "https://registry.yarnpkg.com/graceful-fs/-/graceful-fs-4.2.11.tgz#4183e4e8bf08bb6e05bbb2f7d2e0c8f712ca40e3"
   integrity sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ==
+
+handlebars@4.7.7:
+  version "4.7.7"
+  resolved "https://registry.yarnpkg.com/handlebars/-/handlebars-4.7.7.tgz#9ce33416aad02dbd6c8fafa8240d5d98004945a1"
+  integrity sha512-aAcXm5OAfE/8IXkcZvCepKU3VzW1/39Fb5ZuqMtgI/hT8X2YgoMvBY5dLhq/cpOvw7Lk1nK/UF71aLG/ZnVYRA==
+  dependencies:
+    minimist "^1.2.5"
+    neo-async "^2.6.0"
+    source-map "^0.6.1"
+    wordwrap "^1.0.0"
+  optionalDependencies:
+    uglify-js "^3.1.4"
 
 hard-rejection@^2.1.0:
   version "2.1.0"
@@ -1692,7 +1737,7 @@ minimist-options@4.1.0:
     is-plain-obj "^1.1.0"
     kind-of "^6.0.3"
 
-minimist@^1.2.6:
+minimist@^1.2.5, minimist@^1.2.6:
   version "1.2.8"
   resolved "https://registry.yarnpkg.com/minimist/-/minimist-1.2.8.tgz#c1a464e7693302e082a075cee0c057741ac4772c"
   integrity sha512-2yyAR8qBkN3YuheJanUpWC5U3bb5osDywNB8RzDVlDwDHbocAJveqqj1u8+SVD7jkWT4yvsHCpWqqWqAxb0zCA==
@@ -1718,6 +1763,11 @@ natural-compare@^1.4.0:
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/natural-compare/-/natural-compare-1.4.0.tgz#4abebfeed7541f2c27acfb29bdbbd15c8d5ba4f7"
   integrity sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==
+
+neo-async@^2.6.0:
+  version "2.6.2"
+  resolved "https://registry.yarnpkg.com/neo-async/-/neo-async-2.6.2.tgz#b4aafb93e3aeb2d8174ca53cf163ab7d7308305f"
+  integrity sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==
 
 nice-try@^1.0.4:
   version "1.0.5"
@@ -2283,6 +2333,11 @@ sort-package-json@1.53.1:
     is-plain-obj "2.1.0"
     sort-object-keys "^1.1.3"
 
+source-map@^0.6.1:
+  version "0.6.1"
+  resolved "https://registry.yarnpkg.com/source-map/-/source-map-0.6.1.tgz#74722af32e9614e9c287a8d0bbde48b5e2f1a263"
+  integrity sha512-UjgapumWlbMhkBgzT7Ykc5YXUT46F0iKu8SGXq0bcwP5dz/h0Plj6enJqjz1Zbq2l5WaqYnrVbwWOWMyF3F47g==
+
 spdx-correct@^3.0.0:
   version "3.2.0"
   resolved "https://registry.yarnpkg.com/spdx-correct/-/spdx-correct-3.2.0.tgz#4f5ab0668f0059e34f9c00dce331784a12de4e9c"
@@ -2549,6 +2604,11 @@ type-fest@^0.8.1:
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-5.1.3.tgz#8d84219244a6b40b6fb2b33cc1c062f715b9e826"
   integrity sha512-XH627E9vkeqhlZFQuL+UsyAXEnibT0kWR2FWONlr4sTjvxyJYnyefgrkyECLzM5NenmKzRAy2rR/OlYLA1HkZw==
 
+uglify-js@^3.1.4:
+  version "3.17.4"
+  resolved "https://registry.yarnpkg.com/uglify-js/-/uglify-js-3.17.4.tgz#61678cf5fa3f5b7eb789bb345df29afb8257c22c"
+  integrity sha512-T9q82TJI9e/C1TAxYvfb16xO120tMVFZrGA3f9/P4424DNu6ypK103y0GPFVa17yotwSyZW5iYXgjYHkGrJW/g==
+
 universalify@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/universalify/-/universalify-2.0.0.tgz#75a4984efedc4b08975c5aeb73f530d02df25717"
@@ -2597,6 +2657,11 @@ word-wrap@~1.2.3:
   version "1.2.3"
   resolved "https://registry.yarnpkg.com/word-wrap/-/word-wrap-1.2.3.tgz#610636f6b1f703891bd34771ccb17fb93b47079c"
   integrity sha512-Hz/mrNwitNRh/HUAtM/VT/5VH+ygD6DV7mYKZAtHOrbs8U7lvPS6xf7EJKMF0uW1KJCl0H701g3ZGus+muE5vQ==
+
+wordwrap@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/wordwrap/-/wordwrap-1.0.0.tgz#27584810891456a4171c8d0226441ade90cbcaeb"
+  integrity sha512-gvVzJFlPycKc5dZN4yPkP8w7Dc37BtP1yczEneOb4uq34pXZcvrtRTmWV8W+Ume+XCxKgbjM+nevkyFPMybd4Q==
 
 wrap-ansi@^6.2.0:
   version "6.2.0"
@@ -2653,7 +2718,7 @@ yargs-parser@^21.1.1:
   resolved "https://registry.yarnpkg.com/yargs-parser/-/yargs-parser-21.1.1.tgz#9096bceebf990d21bb31fa9516e0ede294a77d35"
   integrity sha512-tVpsJW7DdjecAiFpbIB1e3qxIQsE6NoPc5/eTdrbbIC4h0LVsWhnoa3g+m2HclBIujHzsxZ4VJVA+GUuc2/LBw==
 
-yargs@^17.0.0:
+yargs@17.7.2, yargs@^17.0.0:
   version "17.7.2"
   resolved "https://registry.yarnpkg.com/yargs/-/yargs-17.7.2.tgz#991df39aca675a192b816e1e0363f9d75d2aa269"
   integrity sha512-7dSzzRQ++CKnNI/krKnYRV7JKKPUXMEh61soaHKg9mrWEhzFWhFnxPxGl+69cD1Ou63C13NUPCnmIcrvqCuM6w==
