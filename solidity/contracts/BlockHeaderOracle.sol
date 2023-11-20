@@ -1,17 +1,14 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity =0.8.19;
 
+import {IBlockHeaderOracle} from 'interfaces/IBlockHeaderOracle.sol';
 /**
  * @title BlockHeaderOracle
  * @notice This contract's purpose is to return the latest stored L1 block header and timestamp
  * @notice Every X minutes a "magical" off-chain agent provides the latest block header and timestamp
  */
-contract BlockHeaderOracle {
-  /**
-   * @notice Emits when the block header and timestamp are updated
-   */
-  event BlockHeaderUpdated(bytes _blockHeader, uint256 _blockTimestamp, uint256 _blockNumber);
 
+contract BlockHeaderOracle is IBlockHeaderOracle {
   /**
    * @notice The block header
    */
