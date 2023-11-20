@@ -16,16 +16,10 @@ interface IStorageMirrorRootRegistry {
   //////////////////////////////////////////////////////////////*/
 
   /**
-   * @notice The function that updates the latest verified storage root
-   * @dev This function can only be called by the VerifierModule contract
-   * @param _storageRoot The storage root to be stored
+   * @notice Users can use to propose and verify a storage root of the StorageMirror contract in Home chain
+   * @dev Calls queryL1BlockHeader to get the block header of the Home chain
+   * @dev Call verifier module for the actual verificationn
+   * @param _accountProof The account proof of the StorageMirror contract in Home chain
    */
-
-  function storeLatestStorageMirrorStorageRoot(bytes32 _storageRoot, uint256 _timestamp) external;
-
-  /**
-   * @notice The function that queries the latest L1 block header
-   */
-
-  function getLatestBlockHeader() external view returns (bytes memory _blockHeader, uint256 _blockTimestamp);
+  function proposeAndVerifyStorageMirrorStorageRoot(bytes memory _accountProof) external;
 }
