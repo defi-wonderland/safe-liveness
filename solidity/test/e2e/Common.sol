@@ -11,19 +11,28 @@ import {UpdateStorageMirrorGuard} from 'contracts/UpdateStorageMirrorGuard.sol';
 import {GuardCallbackModule} from 'contracts/GuardCallbackModule.sol';
 import {BlockHeaderOracle} from 'contracts/BlockHeaderOracle.sol';
 import {NeedsUpdateGuard} from 'contracts/NeedsUpdateGuard.sol';
+import {VerifierModule} from 'contracts/VerifierModule.sol';
+import {StorageMirrorRootRegistry} from 'contracts/StorageMirrorRootRegistry.sol';
 
 import {IGuardCallbackModule} from 'interfaces/IGuardCallbackModule.sol';
 import {ISafe} from 'interfaces/ISafe.sol';
 import {IVerifierModule} from 'interfaces/IVerifierModule.sol';
+import {IStorageMirrorRootRegistry} from 'interfaces/IStorageMirrorRootRegistry.sol';
+import {IBlockHeaderOracle} from 'interfaces/IBlockHeaderOracle.sol';
 
 import {IGnosisSafeProxyFactory} from 'test/e2e/IGnosisSafeProxyFactory.sol';
 import {TestConstants} from 'test/utils/TestConstants.sol';
 import {ContractDeploymentAddress} from 'test/utils/ContractDeploymentAddress.sol';
 
 contract CommonE2EBase is DSTestPlus, TestConstants {
-  uint256 internal constant _FORK_BLOCK = 15_452_788;
+  uint256 internal constant _MAINNET_FORK_BLOCK = 18_621_047;
+  uint256 internal constant _OPTIMISM_FORK_BLOCK = 112_491_451;
+
+  uint256 internal _MAINNET_FORK_ID;
+  uint256 internal _OPTIMISM_FORK_ID;
 
   address public deployer = makeAddr('deployer');
+  address public deployerOptimism = makeAddr('deployerOptimism');
   address public proposer = makeAddr('proposer');
   address public safeOwner;
   uint256 public safeOwnerKey;
@@ -36,18 +45,22 @@ contract CommonE2EBase is DSTestPlus, TestConstants {
   GuardCallbackModule public guardCallbackModule;
   BlockHeaderOracle public oracle;
   NeedsUpdateGuard public needsUpdateGuard;
+  VerifierModule public verifierModule;
+  StorageMirrorRootRegistry public storageMirrorRootRegistry;
   ISafe public safe;
   ISafe public nonHomeChainSafe;
-  IVerifierModule public verifierModule = IVerifierModule(makeAddr('verifierModule'));
+  // IVerifierModule public verifierModule = IVerifierModule(makeAddr('verifierModule'));
   IGnosisSafeProxyFactory public gnosisSafeProxyFactory = IGnosisSafeProxyFactory(GNOSIS_SAFE_PROXY_FACTORY);
 
   function setUp() public virtual {
-    vm.createSelectFork(vm.rpcUrl('mainnet'), _FORK_BLOCK);
+    // Set up both forks
+    _MAINNET_FORK_ID = vm.createFork(vm.rpcUrl('mainnet'), _MAINNET_FORK_BLOCK);
+    _OPTIMISM_FORK_ID = vm.createFork(vm.rpcUrl('optimism'), _OPTIMISM_FORK_BLOCK);
+    // Select mainnet fork
+    vm.selectFork(_MAINNET_FORK_ID);
 
     // Make address and key of safe owner
     (safeOwner, safeOwnerKey) = makeAddrAndKey('safeOwner');
-    // Make address and key of non home chain safe owner
-    (nonHomeChainSafeOwner, nonHomeChainSafeOwnerKey) = makeAddrAndKey('nonHomeChainSafeOwner');
 
     /// =============== HOME CHAIN ===============
     vm.prank(safeOwner);
@@ -106,22 +119,34 @@ contract CommonE2EBase is DSTestPlus, TestConstants {
     );
 
     /// =============== NON HOME CHAIN ===============
+    vm.selectFork(_OPTIMISM_FORK_ID);
+    // Make address and key of non home chain safe owner
+    (nonHomeChainSafeOwner, nonHomeChainSafeOwnerKey) = makeAddrAndKey('nonHomeChainSafeOwner');
+
+    address _storageMirrorRootRegistryTheoriticalAddress = ContractDeploymentAddress.addressFrom(deployerOptimism, 2);
+
     // Set up non home chain safe
     vm.prank(nonHomeChainSafeOwner);
     nonHomeChainSafe = ISafe(address(gnosisSafeProxyFactory.createProxy(GNOSIS_SAFE_SINGLETON, ''))); // nonHomeChainSafeOwner nonce 0
     label(address(nonHomeChainSafe), 'NonHomeChainSafeProxy');
 
     // Deploy non home chain contracts
-    vm.prank(deployer);
-    oracle = new BlockHeaderOracle(); // deployer nonce 3
-    label(address(oracle), 'MockOracle');
-
-    // vm.prank(deployer);
-    // verifierModule = new VerifierModule(..); // deployer nonce 4
-    // label(address(verifierModule), 'VerifierModule');
+    vm.prank(deployerOptimism);
+    oracle = new BlockHeaderOracle(); // deployerOptimism nonce 0
+    label(address(oracle), 'BlockHeaderOracle');
 
     vm.prank(deployer);
-    needsUpdateGuard = new NeedsUpdateGuard(verifierModule); // deployer nonce 5
+    verifierModule =
+    new VerifierModule(IStorageMirrorRootRegistry(_storageMirrorRootRegistryTheoriticalAddress), address(storageMirror)); // deployerOptimism nonce 1
+    label(address(verifierModule), 'VerifierModule');
+
+    vm.prank(deployerOptimism);
+    storageMirrorRootRegistry =
+      new StorageMirrorRootRegistry(address(storageMirror), IVerifierModule(verifierModule), IBlockHeaderOracle(oracle)); // deployerOptimism nonce 2
+    label(address(storageMirrorRootRegistry), 'StorageMirrorRootRegistry');
+
+    vm.prank(deployerOptimism);
+    needsUpdateGuard = new NeedsUpdateGuard(verifierModule); // deployer nonce 3
     label(address(needsUpdateGuard), 'NeedsUpdateGuard');
 
     // set up non home chain safe
@@ -133,6 +158,7 @@ contract CommonE2EBase is DSTestPlus, TestConstants {
     );
 
     // enable verifier module
+    enableModule(nonHomeChainSafe, nonHomeChainSafeOwner, nonHomeChainSafeOwnerKey, address(verifierModule));
 
     // set needs update guard
   }

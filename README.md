@@ -23,7 +23,7 @@ yarn build
 
 ### Available Commands
 
-Make sure to set `MAINNET_RPC` environment variable before running end-to-end tests.
+Make sure to set `MAINNET_RPC` and `OPTIMISM_RPC` environment variable before running end-to-end tests.
 
 | Yarn Command            | Description                                                |
 | ----------------------- | ---------------------------------------------------------- |

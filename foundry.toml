@@ -31,3 +31,4 @@ src = 'solidity/test'
 [rpc_endpoints]
 mainnet = "${MAINNET_RPC}"
 goerli = "${GOERLI_RPC}"
+optimism = "${OPTIMISM_RPC}"
