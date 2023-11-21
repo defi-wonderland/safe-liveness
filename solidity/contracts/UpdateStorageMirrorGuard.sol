@@ -8,7 +8,7 @@ import {IStorageMirror} from 'interfaces/IStorageMirror.sol';
 
 /**
  * @title UpdateStorageMirrorGuard
- * @notice This guard is responsible for calling the GuardCallbackModule when a change in settings of a safe is executed.
+ * @notice This guard is responsible for calling the GuardCallbackModule when a change in the settings of a safe is executed.
  */
 contract UpdateStorageMirrorGuard is BaseGuard {
   /**
