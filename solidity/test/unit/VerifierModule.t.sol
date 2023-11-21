@@ -762,7 +762,7 @@ contract UnitMerklePatriciaTree is Base {
     bytes memory _storageProof = hex'e10e2d527612073b26eecdfd717e6a320f';
 
     vm.mockCall(
-      _storageMirrorRegistry,
+      address(_storageMirrorRegistry),
       abi.encodeWithSelector(IStorageMirrorRootRegistry.latestVerifiedStorageRoot.selector),
       abi.encode(_fakeStorageRoot)
     );
@@ -819,7 +819,7 @@ contract UnitMerklePatriciaTree is Base {
     );
 
     vm.mockCall(
-      _storageMirrorRegistry,
+      address(_storageMirrorRegistry),
       abi.encodeWithSelector(
         IStorageMirrorRootRegistry.proposeAndVerifyStorageMirrorStorageRoot.selector, _accountProof
       ),
@@ -827,7 +827,7 @@ contract UnitMerklePatriciaTree is Base {
     );
 
     vm.expectCall(
-      _storageMirrorRegistry,
+      address(_storageMirrorRegistry),
       abi.encodeWithSelector(
         IStorageMirrorRootRegistry.proposeAndVerifyStorageMirrorStorageRoot.selector, _accountProof
       )
