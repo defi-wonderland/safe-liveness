@@ -78,11 +78,13 @@ contract VerifierModule is IVerifierModule {
    *
    * @param _storageMirrorAccountProof The account proof of the StorageMirror contract from the latest block
    * @param _blockHeader The block header of the latest block
+   * @return _storageRoot The verified storage root
+   * @return _blockNumber The block number from the _blockHeader
    */
   function extractStorageMirrorStorageRoot(
     bytes memory _storageMirrorAccountProof,
     bytes memory _blockHeader
-  ) external view returns (bytes32 _storageRoot) {
+  ) external view returns (bytes32 _storageRoot, uint256 _blockNumber) {
     // Verify and parse the blockheader for the state root
     StateVerifier.BlockHeader memory _parsedBlockHeader = StateVerifier.verifyBlockHeader(_blockHeader);
 
@@ -95,6 +97,7 @@ contract VerifierModule is IVerifierModule {
 
     // Extract the storage root from the output of the MPT
     _storageRoot = StateVerifier.extractStorageRootFromAccount(_rlpAccount);
+    _blockNumber = _parsedBlockHeader.number;
   }
 
   /**

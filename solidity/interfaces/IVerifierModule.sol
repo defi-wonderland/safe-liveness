@@ -87,11 +87,13 @@ interface IVerifierModule {
    *
    * @param _storageMirrorAccountProof The account proof of the StorageMirror contract from the latest block
    * @param _blockHeader The block header of the latest block
+   * @return _storageRoot The verified storage root
+   * @return _blockNumber The block number from the _blockHeader
    */
   function extractStorageMirrorStorageRoot(
     bytes memory _storageMirrorAccountProof,
     bytes memory _blockHeader
-  ) external view returns (bytes32 _storageRoot);
+  ) external view returns (bytes32 _storageRoot, uint256 _blockNumber);
 
   /**
    * @notice Verifies the new settings that are incoming against a storage proof from the StorageMirror on the home chain

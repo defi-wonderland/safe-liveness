@@ -123,16 +123,20 @@ contract TestVerifierModule is VerifierModule {
   function extractStorageMirrorStorageRootTest(
     bytes memory _storageMirrorAccountProof,
     bytes memory _blockHeader
-  ) external view returns (bytes32 _storageRoot) {
+  ) external view returns (bytes32 _storageRoot, uint256 _blockNumber) {
+    // Verify and parse the blockheader for the state root
     StateVerifier.BlockHeader memory _parsedBlockHeader = mpt.verifyBlockHeader(_blockHeader);
 
+    // Verify the account proof against the state root
     bytes memory _rlpAccount = mpt.extractProofValue(
       _parsedBlockHeader.stateRootHash,
       abi.encodePacked(keccak256(abi.encode(STORAGE_MIRROR))),
       _storageMirrorAccountProof
     );
 
+    // Extract the storage root from the output of the MPT
     _storageRoot = mpt.extractStorageRootFromAccount(_rlpAccount);
+    _blockNumber = 500;
   }
 }
 
@@ -746,12 +750,14 @@ contract UnitStorageRoot is Base {
 
     vm.mockCall(
       address(mpt),
-      abi.encodeWithSelector(TestMPT.extractStorageRootFromAccount.selector, abi.encodePacked(_fakeAccount)),
+      abi.encodeWithSelector(TestMPT.extractStorageRootFromAccount.selector, _fakeAccount),
       abi.encode(_fakeStorageRoot)
     );
 
-    bytes32 _storageRoot = verifierModule.extractStorageMirrorStorageRootTest(_accountProof, _rlpHeader);
+    (bytes32 _storageRoot, uint256 _blockNumber) =
+      verifierModule.extractStorageMirrorStorageRootTest(_accountProof, _rlpHeader);
 
     assertEq(_storageRoot, _fakeStorageRoot, 'Storage root should match');
+    assertEq(_blockNumber, _fakeHeader.number, 'Should match the block header');
   }
 }
