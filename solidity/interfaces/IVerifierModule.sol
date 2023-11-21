@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity =0.8.19;
 
+import {Enum} from 'safe-contracts/common/Enum.sol';
 import {IStorageMirror} from 'interfaces/IStorageMirror.sol';
 import {IStorageMirrorRootRegistry} from 'interfaces/IStorageMirrorRootRegistry.sol';
-import {IBlockHeaderOracle} from 'interfaces/IBlockHeaderOracle.sol';
-import {Enum} from 'safe-contracts/common/Enum.sol';
 
 interface IVerifierModule {
   /*///////////////////////////////////////////////////////////////
@@ -54,7 +53,6 @@ interface IVerifierModule {
    *
    * @return _storageMirror The address of the StorageMirror contract.
    */
-
   function STORAGE_MIRROR() external view returns (address _storageMirror);
 
   /**
@@ -62,16 +60,7 @@ interface IVerifierModule {
    *
    * @return _storageMirrorRootRegistry The interface of the StorageMirrorRootRegistry contract.
    */
-
   function STORAGE_MIRROR_ROOT_REGISTRY() external view returns (IStorageMirrorRootRegistry _storageMirrorRootRegistry);
-
-  /**
-   * @notice The interface of the BlockHeaderOracle contract.
-   *
-   * @return _blockHeaderOracle The interface of the BlockHeaderOracle contract.
-   */
-
-  function BLOCK_HEADER_ORACLE() external view returns (IBlockHeaderOracle _blockHeaderOracle);
 
   /**
    * @notice The hash of the latest verified settings for a given safe
@@ -79,7 +68,6 @@ interface IVerifierModule {
    *
    * @return _latestVerifiedSettings The hash of the latest verified settings
    */
-
   function latestVerifiedSettings(address _safe) external view returns (bytes32 _latestVerifiedSettings);
 
   /**
@@ -88,7 +76,6 @@ interface IVerifierModule {
    *
    * @return _timestamp The timestamp of when it was saved
    */
-
   function latestVerifiedSettingsTimestamp(address _safe) external view returns (uint256 _timestamp);
 
   /*///////////////////////////////////////////////////////////////
@@ -99,12 +86,12 @@ interface IVerifierModule {
    * @notice The function extracts the storage root of the StorageMirror contract from a given account proof
    *
    * @param _storageMirrorAccountProof The account proof of the StorageMirror contract from the latest block
+   * @param _blockHeader The block header of the latest block
    */
-
-  function extractStorageMirrorStorageRoot(bytes memory _storageMirrorAccountProof)
-    external
-    view
-    returns (bytes32 _storageRoot);
+  function extractStorageMirrorStorageRoot(
+    bytes memory _storageMirrorAccountProof,
+    bytes memory _blockHeader
+  ) external view returns (bytes32 _storageRoot);
 
   /**
    * @notice Verifies the new settings that are incoming against a storage proof from the StorageMirror on the home chain
@@ -114,7 +101,6 @@ interface IVerifierModule {
    * @param _storageMirrorStorageProof The storage proof of the StorageMirror contract on the home chain
    * @param _arbitraryTxnParams The transaction parameters for the arbitrary safe transaction that will execute
    */
-
   function proposeAndVerifyUpdate(
     address _safe,
     IStorageMirror.SafeSettings memory _proposedSettings,

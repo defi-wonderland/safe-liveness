@@ -2,15 +2,15 @@
 pragma solidity >=0.8.4 <0.9.0;
 
 import {Test} from 'forge-std/Test.sol';
+import {RLPReader} from 'solidity-rlp/contracts/RLPReader.sol';
+import {Enum} from 'safe-contracts/common/Enum.sol';
 import {VerifierModule, IVerifierModule} from 'contracts/VerifierModule.sol';
 import {IBlockHeaderOracle} from 'interfaces/IBlockHeaderOracle.sol';
 import {IStorageMirror} from 'interfaces/IStorageMirror.sol';
 import {ISafe} from 'interfaces/ISafe.sol';
-import {Enum} from 'safe-contracts/common/Enum.sol';
 import {IStorageMirrorRootRegistry} from 'interfaces/IStorageMirrorRootRegistry.sol';
 import {MerklePatriciaProofVerifier} from 'libraries/MerklePatriciaProofVerifier.sol';
 import {StateVerifier} from 'libraries/StateVerifier.sol';
-import {RLPReader} from 'solidity-rlp/contracts/RLPReader.sol';
 
 contract TestMPT {
   using RLPReader for RLPReader.RLPItem;
@@ -43,11 +43,10 @@ contract TestVerifierModule is VerifierModule {
   TestMPT public mpt;
 
   constructor(
-    address _storageMirrorRootRegistry,
+    IStorageMirrorRootRegistry _storageMirrorRootRegistry,
     address _storageMirror,
-    TestMPT _testMPT,
-    address _oracle
-  ) VerifierModule(_storageMirrorRootRegistry, _storageMirror, _oracle) {
+    TestMPT _testMPT
+  ) VerifierModule(_storageMirrorRootRegistry, _storageMirror) {
     mpt = _testMPT;
   }
 
@@ -121,13 +120,10 @@ contract TestVerifierModule is VerifierModule {
   }
 
   // NOTE: Should match the function from the verifier but externalizes the library calls
-  function extractStorageMirrorStorageRootTest(bytes memory _storageMirrorAccountProof)
-    external
-    view
-    returns (bytes32 _storageRoot)
-  {
-    (bytes memory _blockHeader,) = BLOCK_HEADER_ORACLE.getLatestBlockHeader();
-
+  function extractStorageMirrorStorageRootTest(
+    bytes memory _storageMirrorAccountProof,
+    bytes memory _blockHeader
+  ) external view returns (bytes32 _storageRoot) {
     StateVerifier.BlockHeader memory _parsedBlockHeader = mpt.verifyBlockHeader(_blockHeader);
 
     bytes memory _rlpAccount = mpt.extractProofValue(
@@ -141,14 +137,13 @@ contract TestVerifierModule is VerifierModule {
 }
 
 abstract contract Base is Test {
-  address internal _storageMirrorRegistry = makeAddr('storageMirrorRegistry');
+  IStorageMirrorRootRegistry internal _storageMirrorRegistry =
+    IStorageMirrorRootRegistry(makeAddr('storageMirrorRegistry'));
   address internal _storageMirror = makeAddr('storageMirror');
   address internal _fakeSafe = makeAddr('fakeSafe');
-  address internal _oracle = makeAddr('oracle');
 
   TestMPT public mpt = new TestMPT();
-  TestVerifierModule public verifierModule =
-    new TestVerifierModule(_storageMirrorRegistry, _storageMirror, mpt, _oracle);
+  TestVerifierModule public verifierModule = new TestVerifierModule(_storageMirrorRegistry, _storageMirror, mpt);
 
   event VerifiedUpdate(address _safe, bytes32 _verifiedHash);
 }
@@ -337,7 +332,7 @@ contract UnitMerklePatriciaTree is Base {
     bytes memory _storageProof = hex'e10e2d527612073b26eecdfd717e6a320f';
 
     vm.mockCall(
-      _storageMirrorRegistry,
+      address(_storageMirrorRegistry),
       abi.encodeWithSelector(IStorageMirrorRootRegistry.latestVerifiedStorageRoot.selector),
       abi.encode(_fakeStorageRoot)
     );
@@ -380,7 +375,7 @@ contract UnitMerklePatriciaTree is Base {
     bytes memory _storageProof = hex'e10e2d527612073b26eecdfd717e6a320f';
 
     vm.mockCall(
-      _storageMirrorRegistry,
+      address(_storageMirrorRegistry),
       abi.encodeWithSelector(IStorageMirrorRootRegistry.latestVerifiedStorageRoot.selector),
       abi.encode(_fakeStorageRoot)
     );
@@ -412,7 +407,7 @@ contract UnitMerklePatriciaTree is Base {
     bytes memory _storageProof = hex'e10e2d527612073b26eecdfd717e6a320f';
 
     vm.mockCall(
-      _storageMirrorRegistry,
+      address(_storageMirrorRegistry),
       abi.encodeWithSelector(IStorageMirrorRootRegistry.latestVerifiedStorageRoot.selector),
       abi.encode(_fakeStorageRoot)
     );
@@ -461,7 +456,7 @@ contract UnitMerklePatriciaTree is Base {
     bytes memory _storageProof = hex'e10e2d527612073b26eecdfd717e6a320f';
 
     vm.mockCall(
-      _storageMirrorRegistry,
+      address(_storageMirrorRegistry),
       abi.encodeWithSelector(IStorageMirrorRootRegistry.latestVerifiedStorageRoot.selector),
       abi.encode(_fakeStorageRoot)
     );
@@ -563,7 +558,7 @@ contract UnitMerklePatriciaTree is Base {
     bytes memory _storageProof = hex'e10e2d527612073b26eecdfd717e6a320f';
 
     vm.mockCall(
-      _storageMirrorRegistry,
+      address(_storageMirrorRegistry),
       abi.encodeWithSelector(IStorageMirrorRootRegistry.latestVerifiedStorageRoot.selector),
       abi.encode(_fakeStorageRoot)
     );
@@ -655,7 +650,7 @@ contract UnitMerklePatriciaTree is Base {
     bytes memory _storageProof = hex'e10e2d527612073b26eecdfd717e6a320f';
 
     vm.mockCall(
-      _storageMirrorRegistry,
+      address(_storageMirrorRegistry),
       abi.encodeWithSelector(IStorageMirrorRootRegistry.latestVerifiedStorageRoot.selector),
       abi.encode(_fakeStorageRoot)
     );
@@ -732,12 +727,6 @@ contract UnitStorageRoot is Base {
     bytes memory _rlpHeader = abi.encodePacked(_fakeHeader.hash);
 
     vm.mockCall(
-      _oracle,
-      abi.encodeWithSelector(IBlockHeaderOracle.getLatestBlockHeader.selector),
-      abi.encode(_rlpHeader, uint256(1_234_567_890))
-    );
-
-    vm.mockCall(
       address(mpt), abi.encodeWithSelector(TestMPT.verifyBlockHeader.selector, _rlpHeader), abi.encode(_fakeHeader)
     );
 
@@ -761,7 +750,7 @@ contract UnitStorageRoot is Base {
       abi.encode(_fakeStorageRoot)
     );
 
-    bytes32 _storageRoot = verifierModule.extractStorageMirrorStorageRootTest(_accountProof);
+    bytes32 _storageRoot = verifierModule.extractStorageMirrorStorageRootTest(_accountProof, _rlpHeader);
 
     assertEq(_storageRoot, _fakeStorageRoot, 'Storage root should match');
   }
