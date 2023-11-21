@@ -4,7 +4,9 @@ forge-std/=node_modules/forge-std/src
 isolmate/=node_modules/isolmate/src
 safe-contracts/=node_modules/safe-contracts/contracts
 @defi-wonderland/=node_modules/@defi-wonderland/
+solidity-rlp/=node_modules/Solidity-RLP
 
 contracts/=solidity/contracts
 interfaces/=solidity/interfaces
 test/=solidity/test
+libraries/=solidity/libraries

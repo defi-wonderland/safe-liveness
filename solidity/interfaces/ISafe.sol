@@ -100,6 +100,30 @@ interface ISafe {
   function addOwnerWithThreshold(address _owner, uint256 _threshold) external;
 
   /**
+   * @notice Removes the owner `owner` from the Safe and updates the threshold to `_threshold`.
+   * @dev This can only be done via a Safe transaction.
+   * @param _prevOwner Owner that pointed to the owner to be removed in the linked list
+   * @param _owner Owner address to be removed.
+   * @param _threshold New threshold.
+   */
+  function removeOwner(address _prevOwner, address _owner, uint256 _threshold) external;
+
+  /**
+   * @notice Replaces the owner `oldOwner` in the Safe with `newOwner`.
+   * @dev This can only be done via a Safe transaction.
+   * @param _prevOwner Owner that pointed to the owner to be replaced in the linked list
+   * @param _oldOwner Owner address to be replaced.
+   * @param _newOwner New owner address.
+   */
+  function swapOwner(address _prevOwner, address _oldOwner, address _newOwner) external;
+
+  /**
+   * @notice Returns if `owner` is an owner of the Safe.
+   * @return _result if owner is an owner of the Safe.
+   */
+  function isOwner(address _owner) external view returns (bool _result);
+
+  /**
    * @notice Returns the nonce of the safe
    * @return _nonce Current nonce.
    */
