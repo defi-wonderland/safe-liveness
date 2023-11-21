@@ -55,8 +55,7 @@ interface IStorageMirrorRootRegistry {
    * @notice Users can use to propose and verify a storage root of the StorageMirror contract in Home chain
    * @dev Calls queryL1BlockHeader to get the block header of the Home chain
    * @dev Call verifier module for the actual verificationn
-   * @param _blockNumber The block number in the home chain to get the header from
    * @param _accountProof The account proof of the StorageMirror contract in Home chain
    */
-  function proposeAndVerifyStorageMirrorStorageRoot(uint256 _blockNumber, bytes memory _accountProof) external;
+  function proposeAndVerifyStorageMirrorStorageRoot(bytes memory _accountProof) external;
 }

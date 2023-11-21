@@ -19,5 +19,5 @@ interface IVerifierModule {
   function extractStorageMirrorStorageRoot(
     bytes memory _blockHeader,
     bytes memory _accountProof
-  ) external view returns (bytes32 _storageRoot);
+  ) external view returns (bytes32 _storageRoot, uint256 _blockNumber);
 }
