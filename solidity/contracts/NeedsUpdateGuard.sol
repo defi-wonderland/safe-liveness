@@ -56,8 +56,8 @@ contract NeedsUpdateGuard is BaseGuard {
     bytes memory _signatures,
     address _msgSender
   ) external {
-    uint256 _lastVerifiedUpdateTimestamp = VERIFIER_MODULE.latestVerifiedSettingsTimestamp(_msgSender);
-    uint256 _trustLatestUpdateForSeconds = trustLatestUpdateForSeconds[_msgSender];
+    uint256 _lastVerifiedUpdateTimestamp = VERIFIER_MODULE.latestVerifiedSettingsTimestamp(msg.sender);
+    uint256 _trustLatestUpdateForSeconds = trustLatestUpdateForSeconds[msg.sender];
 
     if (_lastVerifiedUpdateTimestamp + _trustLatestUpdateForSeconds < block.timestamp) {
       revert NeedsUpdateGuard_NeedsUpdate();
