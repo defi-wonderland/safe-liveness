@@ -7,7 +7,7 @@ import {NeedsUpdateGuard} from 'contracts/NeedsUpdateGuard.sol';
 import {IVerifierModule} from 'interfaces/IVerifierModule.sol';
 
 abstract contract Base is Test {
-  event TimeTillNeedsUpdateChanged(address indexed _safe, uint256 _newSecuritySettings);
+  event TrustLatestUpdateForSecondsChanged(address indexed _safe, uint256 _trustLatestUpdateForSeconds);
 
   error NeedsUpdateGuard_NeedsUpdate();
 
@@ -26,9 +26,9 @@ abstract contract Base is Test {
 
 contract UnitNeedsUpdateGuard is Base {
   function testCheckTransaction(address _to, uint256 _value, bytes memory _data) public {
-    // Set security settings
+    // Set trustLatestUpdateForSeconds
     vm.prank(safe);
-    needsUpdateGuard.updateSecuritySettings(200);
+    needsUpdateGuard.updateTrustLatestUpdateForSeconds(200);
 
     // Mock latest verified settings timestamp to current timestamp - 100
     uint256 _currentTimeStamp = block.timestamp;
@@ -49,9 +49,9 @@ contract UnitNeedsUpdateGuard is Base {
   }
 
   function testCheckTransactionReverts(address _to, uint256 _value, bytes memory _data) public {
-    // Set security settings
+    // Set trustLatestUpdateForSeconds
     vm.prank(safe);
-    needsUpdateGuard.updateSecuritySettings(200);
+    needsUpdateGuard.updateTrustLatestUpdateForSeconds(200);
 
     // Mock latest verified settings timestamp to current timestamp - 1_000 to make the check fail
     uint256 _currentTimeStamp = block.timestamp;
@@ -78,13 +78,17 @@ contract UnitNeedsUpdateGuard is Base {
     needsUpdateGuard.checkAfterExecution(_txHash, true);
   }
 
-  function testUpdateSecuritySettings(uint256 _newSettings) public {
+  function testUpdateTrustLatestUpdateForSeconds(uint256 _newTrustLatestUpdateForSeconds) public {
     vm.expectEmit(true, true, true, true);
-    emit TimeTillNeedsUpdateChanged(safe, _newSettings);
+    emit TrustLatestUpdateForSecondsChanged(safe, _newTrustLatestUpdateForSeconds);
 
     vm.prank(safe);
-    needsUpdateGuard.updateSecuritySettings(_newSettings);
+    needsUpdateGuard.updateTrustLatestUpdateForSeconds(_newTrustLatestUpdateForSeconds);
 
-    assertEq(needsUpdateGuard.timeTillNeedsUpdate(safe), _newSettings, 'Security settings should be updated');
+    assertEq(
+      needsUpdateGuard.trustLatestUpdateForSeconds(safe),
+      _newTrustLatestUpdateForSeconds,
+      'Should update trustLatestUpdateForSeconds'
+    );
   }
 }

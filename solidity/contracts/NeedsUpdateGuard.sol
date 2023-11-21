@@ -8,15 +8,15 @@ import {IVerifierModule} from 'interfaces/IVerifierModule.sol';
 /**
  * @title NeedsUpdateGuard
  * @notice This guard should prevent the safe from executing any transaction if an update is needed.
- * @notice An update is needed based on the safe owner's security settings.
+ * @notice An update is needed based on the safe owner's time inputed on how long an update is trusted.
  */
 contract NeedsUpdateGuard is BaseGuard {
   /**
-   * @notice Emits when the owner changes the update security settings
+   * @notice Emits when the owner changes the trustLatestUpdateForSeconds
    * @param _safe The address of the safe
-   * @param _timeTillNeedsUpdate The new security settings, how many seconds the safe trusts the last update
+   * @param _trustLatestUpdateForSeconds The new trustLatestUpdateForSeconds, how many seconds the safe trusts the last update
    */
-  event TimeTillNeedsUpdateChanged(address indexed _safe, uint256 _timeTillNeedsUpdate);
+  event TrustLatestUpdateForSecondsChanged(address indexed _safe, uint256 _trustLatestUpdateForSeconds);
 
   /**
    * @notice Throws if the safe needs an update
@@ -29,9 +29,9 @@ contract NeedsUpdateGuard is BaseGuard {
   IVerifierModule public immutable VERIFIER_MODULE;
 
   /**
-   * @notice The mapping of a safe's address to their security settings, how many seconds the safe trusts the last update
+   * @notice How many seconds the safe trusts the last update
    */
-  mapping(address => uint256) public timeTillNeedsUpdate;
+  mapping(address => uint256) public trustLatestUpdateForSeconds;
 
   constructor(IVerifierModule _verifierModule) {
     VERIFIER_MODULE = _verifierModule;
@@ -40,7 +40,7 @@ contract NeedsUpdateGuard is BaseGuard {
   /**
    * @notice Guard hook that is called before a Safe transaction is executed
    * @dev This function should revert if the safe needs an update
-   * @dev WARNING: This can brick the safe if the owner doesn't update the settings or change the security settings
+   * @dev WARNING: This can brick the safe if the owner doesn't update the settings or change the trustLatestUpdateForSeconds
    */
   // solhint-disable no-unused-vars
   function checkTransaction(
@@ -57,9 +57,9 @@ contract NeedsUpdateGuard is BaseGuard {
     address _msgSender
   ) external {
     uint256 _lastVerifiedUpdateTimestamp = VERIFIER_MODULE.latestVerifiedSettingsTimestamp(_msgSender);
-    uint256 _securitySettings = timeTillNeedsUpdate[_msgSender];
+    uint256 _trustLatestUpdateForSeconds = trustLatestUpdateForSeconds[_msgSender];
 
-    if (_lastVerifiedUpdateTimestamp + _securitySettings < block.timestamp) {
+    if (_lastVerifiedUpdateTimestamp + _trustLatestUpdateForSeconds < block.timestamp) {
       revert NeedsUpdateGuard_NeedsUpdate();
     }
   }
@@ -70,12 +70,12 @@ contract NeedsUpdateGuard is BaseGuard {
   function checkAfterExecution(bytes32 _txHash, bool _success) external {}
 
   /**
-   * @notice Should update the safe's security settings
+   * @notice Should update the safe's trustLatestUpdateForSeconds
    * @dev This function should be called by the safe
-   * @param _securitySettings The new security settings, how many seconds the safe trusts the last verified update
+   * @param _trustLatestUpdateForSeconds The new trustLatestUpdateForSeconds, how many seconds the safe trusts the last verified update
    */
-  function updateSecuritySettings(uint256 _securitySettings) external {
-    timeTillNeedsUpdate[msg.sender] = _securitySettings;
-    emit TimeTillNeedsUpdateChanged(msg.sender, _securitySettings);
+  function updateTrustLatestUpdateForSeconds(uint256 _trustLatestUpdateForSeconds) external {
+    trustLatestUpdateForSeconds[msg.sender] = _trustLatestUpdateForSeconds;
+    emit TrustLatestUpdateForSecondsChanged(msg.sender, _trustLatestUpdateForSeconds);
   }
 }
