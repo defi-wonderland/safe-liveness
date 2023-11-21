@@ -30,6 +30,11 @@ contract StorageMirrorRootRegistry is IStorageMirrorRootRegistry {
    */
   bytes32 public latestVerifiedStorageMirrorStorageRoot;
 
+  /**
+   * @notice The latest verified block number of the Home chain
+   */
+  uint256 public latestVerifiedBlockNumber;
+
   constructor(address _storageMirror, IVerifierModule _verifierModule, IBlockHeaderOracle _blockHeaderOracle) {
     STORAGE_MIRROR = _storageMirror;
     VERIFIER_MODULE = _verifierModule;
@@ -49,6 +54,7 @@ contract StorageMirrorRootRegistry is IStorageMirrorRootRegistry {
       VERIFIER_MODULE.extractStorageMirrorStorageRoot(_blockHeader, _accountProof);
 
     latestVerifiedStorageMirrorStorageRoot = _latestVerifiedStorageMirrorStorageRoot;
+    latestVerifiedBlockNumber = _blockNumber;
 
     emit VerifiedStorageMirrorStorageRoot(_blockNumber, latestVerifiedStorageMirrorStorageRoot);
   }

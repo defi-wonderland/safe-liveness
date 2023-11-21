@@ -39,6 +39,12 @@ interface IStorageMirrorRootRegistry {
   function BLOCK_HEADER_ORACLE() external view returns (IBlockHeaderOracle _blockHeaderOracle);
 
   /**
+   * @notice The latest verified block number of the Home chain
+   * @return _latestVerifiedBlockNumber The latest verified block number of the Home chain
+   */
+  function latestVerifiedBlockNumber() external view returns (uint256 _latestVerifiedBlockNumber);
+
+  /**
    * @notice The latest verified storage root of the StorageMirror contract in Home chain
    * @return _latestVerifiedStorageMirrorStorageRoot The latest verified storage root of the StorageMirror contract in Home chain
    */
