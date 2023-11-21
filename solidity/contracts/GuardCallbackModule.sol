@@ -33,11 +33,11 @@ contract GuardCallbackModule is IGuardCallbackModule {
    * @notice Saves the updated settings for the safe to the StorageMirror.
    * @dev Executes a transaction from the module to update the safe settings in the StorageMirror.
    * @param _safe The address of the safe.
-   * @param _settingsHash The hash of the new settings for the safe.
+   * @param _safeSettings The settings of the safe
    */
-  function saveUpdatedSettings(address _safe, bytes32 _settingsHash) external {
+  function saveUpdatedSettings(address _safe, IStorageMirror.SafeSettings memory _safeSettings) external {
     if (msg.sender != GUARD) revert OnlyGuard();
-    bytes memory _txData = abi.encodeWithSelector(IStorageMirror.update.selector, _settingsHash);
+    bytes memory _txData = abi.encodeWithSelector(IStorageMirror.update.selector, _safeSettings);
     ISafe(_safe).execTransactionFromModule(STORAGE_MIRROR, 0, _txData, Enum.Operation.Call);
   }
 }

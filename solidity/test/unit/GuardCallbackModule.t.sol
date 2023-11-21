@@ -53,20 +53,19 @@ contract UnitGuardCallbackModuel is Base {
       _storageMirror,
       0,
       abi.encodeWithSelector(
-        IStorageMirror.update.selector,
-        keccak256(abi.encode(IStorageMirror.SafeSettings({owners: _owners, threshold: 1})))
+        IStorageMirror.update.selector, IStorageMirror.SafeSettings({owners: _owners, threshold: 1})
       ),
       Enum.Operation.Call
     );
     vm.prank(_guard);
     vm.expectCall(address(_fakeSafe), _txData);
     _guardCallbackModule.saveUpdatedSettings(
-      address(_fakeSafe), keccak256(abi.encode(IStorageMirror.SafeSettings({owners: _owners, threshold: 1})))
+      address(_fakeSafe), IStorageMirror.SafeSettings({owners: _owners, threshold: 1})
     );
   }
 
-  function testSaveUpdatedSettingsRevertsIfNotCalledFromGuard(bytes32 _fakeData) public {
+  function testSaveUpdatedSettingsRevertsIfNotCalledFromGuard(IStorageMirror.SafeSettings memory _safeSettings) public {
     vm.expectRevert(IGuardCallbackModule.OnlyGuard.selector);
-    _guardCallbackModule.saveUpdatedSettings(address(_fakeSafe), _fakeData);
+    _guardCallbackModule.saveUpdatedSettings(address(_fakeSafe), _safeSettings);
   }
 }
