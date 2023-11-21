@@ -7,7 +7,7 @@ import {NeedsUpdateGuard} from 'contracts/NeedsUpdateGuard.sol';
 import {IVerifierModule} from 'interfaces/IVerifierModule.sol';
 
 abstract contract Base is Test {
-  event SecuritySettingsChanged(address indexed _safe, uint256 _newSecuritySettings);
+  event TimeTillNeedsUpdateChanged(address indexed _safe, uint256 _newSecuritySettings);
 
   error NeedsUpdateGuard_NeedsUpdate();
 
@@ -44,7 +44,7 @@ contract UnitNeedsUpdateGuard is Base {
 
     vm.prank(safe);
     needsUpdateGuard.checkTransaction(
-      _to, _value, _data, Enum.Operation.Call, 0, 0, 0, address(0), payable(0), '', address(0)
+      _to, _value, _data, Enum.Operation.Call, 0, 0, 0, address(0), payable(0), '', safe
     );
   }
 
@@ -69,7 +69,7 @@ contract UnitNeedsUpdateGuard is Base {
 
     vm.prank(safe);
     needsUpdateGuard.checkTransaction(
-      _to, _value, _data, Enum.Operation.Call, 0, 0, 0, address(0), payable(0), '', address(0)
+      _to, _value, _data, Enum.Operation.Call, 0, 0, 0, address(0), payable(0), '', safe
     );
   }
 
@@ -80,11 +80,11 @@ contract UnitNeedsUpdateGuard is Base {
 
   function testUpdateSecuritySettings(uint256 _newSettings) public {
     vm.expectEmit(true, true, true, true);
-    emit SecuritySettingsChanged(safe, _newSettings);
+    emit TimeTillNeedsUpdateChanged(safe, _newSettings);
 
     vm.prank(safe);
     needsUpdateGuard.updateSecuritySettings(_newSettings);
 
-    assertEq(needsUpdateGuard.safeSecuritySettings(safe), _newSettings, 'Security settings should be updated');
+    assertEq(needsUpdateGuard.timeTillNeedsUpdate(safe), _newSettings, 'Security settings should be updated');
   }
 }

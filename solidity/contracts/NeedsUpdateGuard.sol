@@ -14,9 +14,9 @@ contract NeedsUpdateGuard is BaseGuard {
   /**
    * @notice Emits when the owner changes the update security settings
    * @param _safe The address of the safe
-   * @param _newSecuritySettings The new security settings, how many seconds the safe trusts the last update
+   * @param _timeTillNeedsUpdate The new security settings, how many seconds the safe trusts the last update
    */
-  event SecuritySettingsChanged(address indexed _safe, uint256 _newSecuritySettings);
+  event TimeTillNeedsUpdateChanged(address indexed _safe, uint256 _timeTillNeedsUpdate);
 
   /**
    * @notice Throws if the safe needs an update
@@ -31,7 +31,7 @@ contract NeedsUpdateGuard is BaseGuard {
   /**
    * @notice The mapping of a safe's address to their security settings, how many seconds the safe trusts the last update
    */
-  mapping(address => uint256) public safeSecuritySettings;
+  mapping(address => uint256) public timeTillNeedsUpdate;
 
   constructor(IVerifierModule _verifierModule) {
     VERIFIER_MODULE = _verifierModule;
@@ -56,8 +56,8 @@ contract NeedsUpdateGuard is BaseGuard {
     bytes memory _signatures,
     address _msgSender
   ) external {
-    uint256 _lastVerifiedUpdateTimestamp = VERIFIER_MODULE.latestVerifiedSettingsTimestamp(msg.sender);
-    uint256 _securitySettings = safeSecuritySettings[msg.sender];
+    uint256 _lastVerifiedUpdateTimestamp = VERIFIER_MODULE.latestVerifiedSettingsTimestamp(_msgSender);
+    uint256 _securitySettings = timeTillNeedsUpdate[_msgSender];
 
     if (_lastVerifiedUpdateTimestamp + _securitySettings < block.timestamp) {
       revert NeedsUpdateGuard_NeedsUpdate();
@@ -75,7 +75,7 @@ contract NeedsUpdateGuard is BaseGuard {
    * @param _securitySettings The new security settings, how many seconds the safe trusts the last verified update
    */
   function updateSecuritySettings(uint256 _securitySettings) external {
-    safeSecuritySettings[msg.sender] = _securitySettings;
-    emit SecuritySettingsChanged(msg.sender, _securitySettings);
+    timeTillNeedsUpdate[msg.sender] = _securitySettings;
+    emit TimeTillNeedsUpdateChanged(msg.sender, _securitySettings);
   }
 }
