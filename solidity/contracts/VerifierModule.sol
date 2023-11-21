@@ -158,7 +158,7 @@ contract VerifierModule is IVerifierModule {
     IStorageMirror.SafeSettings memory _proposedSettings,
     bytes memory _storageMirrorStorageProof
   ) internal view virtual returns (bytes32 _hashedProposedSettings) {
-    bytes32 _latestStorageRoot = STORAGE_MIRROR_ROOT_REGISTRY.latestVerifiedStorageRoot();
+    bytes32 _latestStorageRoot = STORAGE_MIRROR_ROOT_REGISTRY.latestVerifiedStorageMirrorStorageRoot();
 
     // The slot of where the latest settings hash is stored in the storage mirror
     bytes32 _safeSettingsSlot = keccak256(abi.encode(_safe, _LATEST_VERIFIED_SETTINGS_SLOT));
