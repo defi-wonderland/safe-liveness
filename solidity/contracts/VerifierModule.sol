@@ -27,6 +27,7 @@ contract VerifierModule is IVerifierModule {
 
   /**
    * @notice The slot of the mapping of the safe to the keccak256 hash of the latest verified settings in the StorageMirror
+   * @dev This constant is used to access the mapping location from the storage mirror '0' is the slot of the mapping
    */
   uint256 internal constant _LATEST_VERIFIED_SETTINGS_SLOT = 0;
 
@@ -82,14 +83,17 @@ contract VerifierModule is IVerifierModule {
     bytes memory _storageMirrorAccountProof,
     bytes memory _blockHeader
   ) external view returns (bytes32 _storageRoot) {
+    // Verify and parse the blockheader for the state root
     StateVerifier.BlockHeader memory _parsedBlockHeader = StateVerifier.verifyBlockHeader(_blockHeader);
 
+    // Verify the account proof against the state root
     bytes memory _rlpAccount = MerklePatriciaProofVerifier.extractProofValue(
       _parsedBlockHeader.stateRootHash,
       abi.encodePacked(keccak256(abi.encode(STORAGE_MIRROR))),
       _storageMirrorAccountProof.toRlpItem().toList()
     );
 
+    // Extract the storage root from the output of the MPT
     _storageRoot = StateVerifier.extractStorageRootFromAccount(_rlpAccount);
   }
 
@@ -156,18 +160,24 @@ contract VerifierModule is IVerifierModule {
     // The slot of where the latest settings hash is stored in the storage mirror
     bytes32 _safeSettingsSlot = keccak256(abi.encode(_safe, _LATEST_VERIFIED_SETTINGS_SLOT));
 
+    // Hash the storage slot
     bytes32 _safeSettingsSlotHash = keccak256(abi.encode(_safeSettingsSlot));
 
+    // Turn the proof into a list to prepare it for input into the MPT
     RLPReader.RLPItem[] memory _stack = _storageMirrorStorageProof.toRlpItem().toList();
 
+    // Use the MPT to get the value of the storage slot
     bytes memory _slotValue =
       MerklePatriciaProofVerifier.extractProofValue(_latestStorageRoot, abi.encodePacked(_safeSettingsSlotHash), _stack);
 
+    // Convert the value into a bytes32 value, this should always fit because the slot should contain a keccak256 hash
     bytes32 _hashedSavedSettings = _bytesToBytes32(_slotValue);
 
+    // Hash the proposed settings
     _hashedProposedSettings = keccak256(abi.encode(_proposedSettings));
 
-    if (_hashedProposedSettings != _hashedSavedSettings) revert SettingsDontMatch();
+    // Verify the proposed settings match what is saved in the storage mirror
+    if (_hashedProposedSettings != _hashedSavedSettings) revert VerifierModule_SettingsDontMatch();
   }
 
   /**
@@ -265,7 +275,7 @@ contract VerifierModule is IVerifierModule {
     // Ensure the source data is 32 bytes or less
 
     // Sanity check the keccak256() of  the security settings should always fit in 32 bytes
-    if (_source.length > 32) revert BytesToBytes32Failed();
+    if (_source.length > 32) revert VerifierModule_BytesToBytes32Failed();
 
     // Copy the data into the bytes32 variable
     assembly {

@@ -19,13 +19,13 @@ interface IVerifierModule {
   /**
    * @notice Reverts when the proposed settings dont match the saved settings on the StorageMirror
    */
-  error SettingsDontMatch();
+  error VerifierModule_SettingsDontMatch();
 
   /**
    * @notice Reverts when the bytes cannot be converted to bytes32
    */
 
-  error BytesToBytes32Failed();
+  error VerifierModule_BytesToBytes32Failed();
 
   /*///////////////////////////////////////////////////////////////
                             STRUCTS

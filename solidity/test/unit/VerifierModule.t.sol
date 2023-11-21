@@ -70,7 +70,7 @@ contract TestVerifierModule is VerifierModule {
 
     _hashedProposedSettings = keccak256(abi.encode(_proposedSettings));
 
-    if (_hashedProposedSettings != _hashedSavedSettings) revert SettingsDontMatch();
+    if (_hashedProposedSettings != _hashedSavedSettings) revert VerifierModule_SettingsDontMatch();
   }
 
   function updateLatestVerifiedSettings(address _safe, IStorageMirror.SafeSettings calldata _proposedSettings) public {
@@ -395,7 +395,7 @@ contract UnitMerklePatriciaTree is Base {
       abi.encode(_expectedOutput)
     );
 
-    vm.expectRevert(IVerifierModule.SettingsDontMatch.selector);
+    vm.expectRevert(IVerifierModule.VerifierModule_SettingsDontMatch.selector);
     verifierModule.verifyNewSettings(_fakeSafe, _fakeSettings, _storageProof);
   }
 
@@ -426,7 +426,7 @@ contract UnitMerklePatriciaTree is Base {
       abi.encode(_expectedOutput)
     );
 
-    vm.expectRevert(IVerifierModule.BytesToBytes32Failed.selector);
+    vm.expectRevert(IVerifierModule.VerifierModule_BytesToBytes32Failed.selector);
     verifierModule.verifyNewSettings(_fakeSafe, _fakeSettings, _storageProof);
   }
 
