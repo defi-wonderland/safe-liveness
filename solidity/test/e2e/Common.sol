@@ -10,9 +10,11 @@ import {StorageMirror} from 'contracts/StorageMirror.sol';
 import {UpdateStorageMirrorGuard} from 'contracts/UpdateStorageMirrorGuard.sol';
 import {GuardCallbackModule} from 'contracts/GuardCallbackModule.sol';
 import {BlockHeaderOracle} from 'contracts/BlockHeaderOracle.sol';
+import {NeedsUpdateGuard} from 'contracts/NeedsUpdateGuard.sol';
 
 import {IGuardCallbackModule} from 'interfaces/IGuardCallbackModule.sol';
 import {ISafe} from 'interfaces/ISafe.sol';
+import {IVerifierModule} from 'interfaces/IVerifierModule.sol';
 
 import {IGnosisSafeProxyFactory} from 'test/e2e/IGnosisSafeProxyFactory.sol';
 import {TestConstants} from 'test/utils/TestConstants.sol';
@@ -26,11 +28,17 @@ contract CommonE2EBase is DSTestPlus, TestConstants {
   address public safeOwner;
   uint256 public safeOwnerKey;
 
+  address public nonHomeChainSafeOwner;
+  uint256 public nonHomeChainSafeOwnerKey;
+
   StorageMirror public storageMirror;
   UpdateStorageMirrorGuard public updateStorageMirrorGuard;
   GuardCallbackModule public guardCallbackModule;
   BlockHeaderOracle public oracle;
+  NeedsUpdateGuard public needsUpdateGuard;
   ISafe public safe;
+  ISafe public nonHomeChainSafe;
+  IVerifierModule public verifierModule = IVerifierModule(makeAddr('verifierModule'));
   IGnosisSafeProxyFactory public gnosisSafeProxyFactory = IGnosisSafeProxyFactory(GNOSIS_SAFE_PROXY_FACTORY);
 
   function setUp() public virtual {
@@ -38,7 +46,10 @@ contract CommonE2EBase is DSTestPlus, TestConstants {
 
     // Make address and key of safe owner
     (safeOwner, safeOwnerKey) = makeAddrAndKey('safeOwner');
+    // Make address and key of non home chain safe owner
+    (nonHomeChainSafeOwner, nonHomeChainSafeOwnerKey) = makeAddrAndKey('nonHomeChainSafeOwner');
 
+    /// =============== HOME CHAIN ===============
     vm.prank(safeOwner);
     safe = ISafe(address(gnosisSafeProxyFactory.createProxy(GNOSIS_SAFE_SINGLETON, ''))); // safeOwner nonce 0
     label(address(safe), 'SafeProxy');
@@ -57,14 +68,10 @@ contract CommonE2EBase is DSTestPlus, TestConstants {
     updateStorageMirrorGuard = new UpdateStorageMirrorGuard(guardCallbackModule); // deployer nonce 2
     label(address(updateStorageMirrorGuard), 'UpdateStorageMirrorGuard');
 
-    vm.prank(deployer);
-    oracle = new BlockHeaderOracle(); // deployer nonce 3
-    label(address(oracle), 'MockOracle');
-
     // Make sure the theoritical address was calculated correctly
     assert(address(updateStorageMirrorGuard) == _updateStorageMirrorGuardTheoriticalAddress);
 
-    // Set up safe
+    // Set up owner home chain safe
     address[] memory _owners = new address[](1);
     _owners[0] = safeOwner;
     vm.prank(safeOwner); // safeOwner nonce 1
@@ -97,6 +104,37 @@ contract CommonE2EBase is DSTestPlus, TestConstants {
       payable(0),
       _setGuardSignature
     );
+
+    /// =============== NON HOME CHAIN ===============
+    // Set up non home chain safe
+    vm.prank(nonHomeChainSafeOwner);
+    nonHomeChainSafe = ISafe(address(gnosisSafeProxyFactory.createProxy(GNOSIS_SAFE_SINGLETON, ''))); // nonHomeChainSafeOwner nonce 0
+    label(address(nonHomeChainSafe), 'NonHomeChainSafeProxy');
+
+    // Deploy non home chain contracts
+    vm.prank(deployer);
+    oracle = new BlockHeaderOracle(); // deployer nonce 3
+    label(address(oracle), 'MockOracle');
+
+    // vm.prank(deployer);
+    // verifierModule = new VerifierModule(..); // deployer nonce 4
+    // label(address(verifierModule), 'VerifierModule');
+
+    vm.prank(deployer);
+    needsUpdateGuard = new NeedsUpdateGuard(verifierModule); // deployer nonce 5
+    label(address(needsUpdateGuard), 'NeedsUpdateGuard');
+
+    // set up non home chain safe
+    address[] memory _nonHomeChainSafeOwners = new address[](1);
+    _nonHomeChainSafeOwners[0] = nonHomeChainSafeOwner;
+    vm.prank(nonHomeChainSafeOwner); // nonHomeChainSafeOwner nonce 1
+    nonHomeChainSafe.setup(
+      _nonHomeChainSafeOwners, 1, address(nonHomeChainSafe), bytes(''), address(0), address(0), 0, payable(0)
+    );
+
+    // enable verifier module
+
+    // set needs update guard
   }
 
   /**
