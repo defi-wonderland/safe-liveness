@@ -11,9 +11,8 @@ interface IStorageMirror {
    *
    * @param _safe The address of the safe
    * @param _settingsHash The hash of the settings
-   * @param _safeSettings The plaintext of the settings
    */
-  event SettingsUpdated(address indexed _safe, bytes32 indexed _settingsHash, SafeSettings _safeSettings);
+  event SettingsUpdated(address indexed _safe, bytes32 indexed _settingsHash);
 
   /*///////////////////////////////////////////////////////////////
                             STRUCTS
@@ -42,7 +41,7 @@ interface IStorageMirror {
   /**
    * @notice Updates a safe's settings hash
    * @dev The safe should always be msg.sender
-   * @param _safeSettings The settings we are going to update to
+   * @param _hashedSafeSettings The hashed settings we are going to update to
    */
-  function update(SafeSettings memory _safeSettings) external;
+  function update(bytes32 _hashedSafeSettings) external;
 }

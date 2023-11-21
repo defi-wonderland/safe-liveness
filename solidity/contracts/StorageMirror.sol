@@ -17,12 +17,11 @@ contract StorageMirror is IStorageMirror {
   /**
    * @notice Updates a safe's settings hash
    * @dev The safe should always be msg.sender
-   * @param _safeSettings The settings we are going to update to
+   * @param _hashedSafeSettings The hashed settings we are going to update to
    */
-  function update(SafeSettings memory _safeSettings) external {
-    bytes32 _settingsHash = keccak256(abi.encode(_safeSettings));
-    latestSettingsHash[msg.sender] = _settingsHash;
+  function update(bytes32 _hashedSafeSettings) external {
+    latestSettingsHash[msg.sender] = _hashedSafeSettings;
 
-    emit SettingsUpdated(msg.sender, _settingsHash, _safeSettings);
+    emit SettingsUpdated(msg.sender, _hashedSafeSettings);
   }
 }
