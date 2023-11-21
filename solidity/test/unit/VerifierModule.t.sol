@@ -56,7 +56,8 @@ contract TestVerifierModule is VerifierModule {
     IStorageMirror.SafeSettings memory _proposedSettings,
     bytes memory _storageMirrorStorageProof
   ) public view returns (bytes32 _hashedProposedSettings) {
-    bytes32 _latestStorageRoot = IStorageMirrorRootRegistry(STORAGE_MIRROR_ROOT_REGISTRY).latestVerifiedStorageRoot();
+    bytes32 _latestStorageRoot =
+      IStorageMirrorRootRegistry(STORAGE_MIRROR_ROOT_REGISTRY).latestVerifiedStorageMirrorStorageRoot();
 
     // The slot of where the latest settings hash is stored in the storage mirror
     bytes32 _safeSettingsSlot = keccak256(abi.encode(_safe, 0));
@@ -337,7 +338,7 @@ contract UnitMerklePatriciaTree is Base {
 
     vm.mockCall(
       address(_storageMirrorRegistry),
-      abi.encodeWithSelector(IStorageMirrorRootRegistry.latestVerifiedStorageRoot.selector),
+      abi.encodeWithSelector(IStorageMirrorRootRegistry.latestVerifiedStorageMirrorStorageRoot.selector),
       abi.encode(_fakeStorageRoot)
     );
 
@@ -380,7 +381,7 @@ contract UnitMerklePatriciaTree is Base {
 
     vm.mockCall(
       address(_storageMirrorRegistry),
-      abi.encodeWithSelector(IStorageMirrorRootRegistry.latestVerifiedStorageRoot.selector),
+      abi.encodeWithSelector(IStorageMirrorRootRegistry.latestVerifiedStorageMirrorStorageRoot.selector),
       abi.encode(_fakeStorageRoot)
     );
 
@@ -412,7 +413,7 @@ contract UnitMerklePatriciaTree is Base {
 
     vm.mockCall(
       address(_storageMirrorRegistry),
-      abi.encodeWithSelector(IStorageMirrorRootRegistry.latestVerifiedStorageRoot.selector),
+      abi.encodeWithSelector(IStorageMirrorRootRegistry.latestVerifiedStorageMirrorStorageRoot.selector),
       abi.encode(_fakeStorageRoot)
     );
 
@@ -461,7 +462,7 @@ contract UnitMerklePatriciaTree is Base {
 
     vm.mockCall(
       address(_storageMirrorRegistry),
-      abi.encodeWithSelector(IStorageMirrorRootRegistry.latestVerifiedStorageRoot.selector),
+      abi.encodeWithSelector(IStorageMirrorRootRegistry.latestVerifiedStorageMirrorStorageRoot.selector),
       abi.encode(_fakeStorageRoot)
     );
 
@@ -563,7 +564,7 @@ contract UnitMerklePatriciaTree is Base {
 
     vm.mockCall(
       address(_storageMirrorRegistry),
-      abi.encodeWithSelector(IStorageMirrorRootRegistry.latestVerifiedStorageRoot.selector),
+      abi.encodeWithSelector(IStorageMirrorRootRegistry.latestVerifiedStorageMirrorStorageRoot.selector),
       abi.encode(_fakeStorageRoot)
     );
 
@@ -655,7 +656,7 @@ contract UnitMerklePatriciaTree is Base {
 
     vm.mockCall(
       address(_storageMirrorRegistry),
-      abi.encodeWithSelector(IStorageMirrorRootRegistry.latestVerifiedStorageRoot.selector),
+      abi.encodeWithSelector(IStorageMirrorRootRegistry.latestVerifiedStorageMirrorStorageRoot.selector),
       abi.encode(_fakeStorageRoot)
     );
 
