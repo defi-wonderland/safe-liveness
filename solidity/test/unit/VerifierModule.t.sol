@@ -99,7 +99,6 @@ contract TestVerifierModule is VerifierModule {
     IStorageMirror.SafeSettings calldata _proposedSettings,
     bytes memory _storageMirrorStorageProof,
     IVerifierModule.SafeTxnParams calldata _safeTxnParams
-
   ) public {
     bytes32 _hashedProposedSettings = verifyNewSettings(_safe, _proposedSettings, _storageMirrorStorageProof);
 
@@ -768,7 +767,7 @@ contract UnitMerklePatriciaTree is Base {
 
     vm.mockCall(
       address(_storageMirrorRegistry),
-      abi.encodeWithSelector(IStorageMirrorRootRegistry.latestVerifiedStorageRoot.selector),
+      abi.encodeWithSelector(IStorageMirrorRootRegistry.latestVerifiedStorageMirrorStorageRoot.selector),
       abi.encode(_fakeStorageRoot)
     );
 
