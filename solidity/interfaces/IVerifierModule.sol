@@ -19,13 +19,12 @@ interface IVerifierModule {
   /**
    * @notice Reverts when the proposed settings dont match the saved settings on the StorageMirror
    */
-  error SettingsDontMatch();
+  error VerifierModule_SettingsDontMatch();
 
   /**
    * @notice Reverts when the bytes cannot be converted to bytes32
    */
-
-  error BytesToBytes32Failed();
+  error VerifierModule_BytesToBytes32Failed();
 
   /*///////////////////////////////////////////////////////////////
                             STRUCTS
@@ -87,11 +86,13 @@ interface IVerifierModule {
    *
    * @param _storageMirrorAccountProof The account proof of the StorageMirror contract from the latest block
    * @param _blockHeader The block header of the latest block
+   * @return _storageRoot The verified storage root
+   * @return _blockNumber The block number from the _blockHeader
    */
   function extractStorageMirrorStorageRoot(
     bytes memory _storageMirrorAccountProof,
     bytes memory _blockHeader
-  ) external view returns (bytes32 _storageRoot);
+  ) external view returns (bytes32 _storageRoot, uint256 _blockNumber);
 
   /**
    * @notice Verifies the new settings that are incoming against a storage proof from the StorageMirror on the home chain
@@ -117,7 +118,6 @@ interface IVerifierModule {
    * @param _storageMirrorStorageProof The storage proof of the StorageMirror contract on the home chain
    * @param _arbitraryTxnParams The transaction parameters for the arbitrary safe transaction that will execute
    */
-
   function extractStorageRootAndVerifyUpdate(
     address _safe,
     IStorageMirror.SafeSettings calldata _proposedSettings,

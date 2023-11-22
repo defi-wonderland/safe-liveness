@@ -7,7 +7,6 @@ import {Enum} from 'safe-contracts/common/Enum.sol';
 import {VerifierModule, IVerifierModule} from 'contracts/VerifierModule.sol';
 import {IBlockHeaderOracle} from 'interfaces/IBlockHeaderOracle.sol';
 import {IStorageMirror} from 'interfaces/IStorageMirror.sol';
-import {IBlockHeaderOracle} from 'interfaces/IBlockHeaderOracle.sol';
 import {ISafe} from 'interfaces/ISafe.sol';
 import {IStorageMirrorRootRegistry} from 'interfaces/IStorageMirrorRootRegistry.sol';
 import {MerklePatriciaProofVerifier} from 'libraries/MerklePatriciaProofVerifier.sol';
@@ -57,7 +56,8 @@ contract TestVerifierModule is VerifierModule {
     IStorageMirror.SafeSettings memory _proposedSettings,
     bytes memory _storageMirrorStorageProof
   ) public view returns (bytes32 _hashedProposedSettings) {
-    bytes32 _latestStorageRoot = IStorageMirrorRootRegistry(STORAGE_MIRROR_ROOT_REGISTRY).latestVerifiedStorageRoot();
+    bytes32 _latestStorageRoot =
+      IStorageMirrorRootRegistry(STORAGE_MIRROR_ROOT_REGISTRY).latestVerifiedStorageMirrorStorageRoot();
 
     // The slot of where the latest settings hash is stored in the storage mirror
     bytes32 _safeSettingsSlot = keccak256(abi.encode(_safe, 0));
@@ -71,7 +71,7 @@ contract TestVerifierModule is VerifierModule {
 
     _hashedProposedSettings = keccak256(abi.encode(_proposedSettings));
 
-    if (_hashedProposedSettings != _hashedSavedSettings) revert SettingsDontMatch();
+    if (_hashedProposedSettings != _hashedSavedSettings) revert VerifierModule_SettingsDontMatch();
   }
 
   function updateLatestVerifiedSettings(address _safe, IStorageMirror.SafeSettings calldata _proposedSettings) public {
@@ -99,6 +99,7 @@ contract TestVerifierModule is VerifierModule {
     IStorageMirror.SafeSettings calldata _proposedSettings,
     bytes memory _storageMirrorStorageProof,
     IVerifierModule.SafeTxnParams calldata _safeTxnParams
+
   ) public {
     bytes32 _hashedProposedSettings = verifyNewSettings(_safe, _proposedSettings, _storageMirrorStorageProof);
 
@@ -135,16 +136,20 @@ contract TestVerifierModule is VerifierModule {
   function extractStorageMirrorStorageRootTest(
     bytes memory _storageMirrorAccountProof,
     bytes memory _blockHeader
-  ) external view returns (bytes32 _storageRoot) {
+  ) external view returns (bytes32 _storageRoot, uint256 _blockNumber) {
+    // Verify and parse the blockheader for the state root
     StateVerifier.BlockHeader memory _parsedBlockHeader = mpt.verifyBlockHeader(_blockHeader);
 
+    // Verify the account proof against the state root
     bytes memory _rlpAccount = mpt.extractProofValue(
       _parsedBlockHeader.stateRootHash,
       abi.encodePacked(keccak256(abi.encode(STORAGE_MIRROR))),
       _storageMirrorAccountProof
     );
 
+    // Extract the storage root from the output of the MPT
     _storageRoot = mpt.extractStorageRootFromAccount(_rlpAccount);
+    _blockNumber = _parsedBlockHeader.number;
   }
 }
 
@@ -345,7 +350,7 @@ contract UnitMerklePatriciaTree is Base {
 
     vm.mockCall(
       address(_storageMirrorRegistry),
-      abi.encodeWithSelector(IStorageMirrorRootRegistry.latestVerifiedStorageRoot.selector),
+      abi.encodeWithSelector(IStorageMirrorRootRegistry.latestVerifiedStorageMirrorStorageRoot.selector),
       abi.encode(_fakeStorageRoot)
     );
 
@@ -388,7 +393,7 @@ contract UnitMerklePatriciaTree is Base {
 
     vm.mockCall(
       address(_storageMirrorRegistry),
-      abi.encodeWithSelector(IStorageMirrorRootRegistry.latestVerifiedStorageRoot.selector),
+      abi.encodeWithSelector(IStorageMirrorRootRegistry.latestVerifiedStorageMirrorStorageRoot.selector),
       abi.encode(_fakeStorageRoot)
     );
 
@@ -407,7 +412,7 @@ contract UnitMerklePatriciaTree is Base {
       abi.encode(_expectedOutput)
     );
 
-    vm.expectRevert(IVerifierModule.SettingsDontMatch.selector);
+    vm.expectRevert(IVerifierModule.VerifierModule_SettingsDontMatch.selector);
     verifierModule.verifyNewSettings(_fakeSafe, _fakeSettings, _storageProof);
   }
 
@@ -420,7 +425,7 @@ contract UnitMerklePatriciaTree is Base {
 
     vm.mockCall(
       address(_storageMirrorRegistry),
-      abi.encodeWithSelector(IStorageMirrorRootRegistry.latestVerifiedStorageRoot.selector),
+      abi.encodeWithSelector(IStorageMirrorRootRegistry.latestVerifiedStorageMirrorStorageRoot.selector),
       abi.encode(_fakeStorageRoot)
     );
 
@@ -438,7 +443,7 @@ contract UnitMerklePatriciaTree is Base {
       abi.encode(_expectedOutput)
     );
 
-    vm.expectRevert(IVerifierModule.BytesToBytes32Failed.selector);
+    vm.expectRevert(IVerifierModule.VerifierModule_BytesToBytes32Failed.selector);
     verifierModule.verifyNewSettings(_fakeSafe, _fakeSettings, _storageProof);
   }
 
@@ -469,7 +474,7 @@ contract UnitMerklePatriciaTree is Base {
 
     vm.mockCall(
       address(_storageMirrorRegistry),
-      abi.encodeWithSelector(IStorageMirrorRootRegistry.latestVerifiedStorageRoot.selector),
+      abi.encodeWithSelector(IStorageMirrorRootRegistry.latestVerifiedStorageMirrorStorageRoot.selector),
       abi.encode(_fakeStorageRoot)
     );
 
@@ -571,7 +576,7 @@ contract UnitMerklePatriciaTree is Base {
 
     vm.mockCall(
       address(_storageMirrorRegistry),
-      abi.encodeWithSelector(IStorageMirrorRootRegistry.latestVerifiedStorageRoot.selector),
+      abi.encodeWithSelector(IStorageMirrorRootRegistry.latestVerifiedStorageMirrorStorageRoot.selector),
       abi.encode(_fakeStorageRoot)
     );
 
@@ -663,7 +668,7 @@ contract UnitMerklePatriciaTree is Base {
 
     vm.mockCall(
       address(_storageMirrorRegistry),
-      abi.encodeWithSelector(IStorageMirrorRootRegistry.latestVerifiedStorageRoot.selector),
+      abi.encodeWithSelector(IStorageMirrorRootRegistry.latestVerifiedStorageMirrorStorageRoot.selector),
       abi.encode(_fakeStorageRoot)
     );
 
@@ -868,12 +873,14 @@ contract UnitStorageRoot is Base {
 
     vm.mockCall(
       address(mpt),
-      abi.encodeWithSelector(TestMPT.extractStorageRootFromAccount.selector, abi.encodePacked(_fakeAccount)),
+      abi.encodeWithSelector(TestMPT.extractStorageRootFromAccount.selector, _fakeAccount),
       abi.encode(_fakeStorageRoot)
     );
 
-    bytes32 _storageRoot = verifierModule.extractStorageMirrorStorageRootTest(_accountProof, _rlpHeader);
+    (bytes32 _storageRoot, uint256 _blockNumber) =
+      verifierModule.extractStorageMirrorStorageRootTest(_accountProof, _rlpHeader);
 
     assertEq(_storageRoot, _fakeStorageRoot, 'Storage root should match');
+    assertEq(_blockNumber, _fakeHeader.number, 'Should match the block header');
   }
 }
