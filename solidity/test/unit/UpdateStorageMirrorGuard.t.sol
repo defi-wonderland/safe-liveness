@@ -27,25 +27,25 @@ abstract contract Base is Test {
 
 contract UnitUpdateStorageMirrorGuard is Base {
   function testCheckTransaction() public {
-    assertFalse(updateStorageMirrorGuard.didSettingsChange());
-    assertEq(updateStorageMirrorGuard.settingsHash(), bytes32(''));
+    assertFalse(updateStorageMirrorGuard.didSettingsChange(safe));
+    assertEq(updateStorageMirrorGuard.settingsHash(safe), bytes32(''));
 
     vm.expectEmit(true, true, true, true);
     emit SettingsChanged(safe, settingsHash, safeSettings);
     vm.prank(safe);
     updateStorageMirrorGuard.checkTransaction(
-      address(0), 0, '', Enum.Operation.Call, 0, 0, 0, address(0), payable(0), '', address(0)
+      address(0), 0, '', Enum.Operation.Call, 0, 0, 0, address(0), payable(0), '', safe
     );
 
-    assertTrue(updateStorageMirrorGuard.didSettingsChange());
-    assertEq(updateStorageMirrorGuard.settingsHash(), settingsHash, 'Settings hash should be stored');
+    assertTrue(updateStorageMirrorGuard.didSettingsChange(safe));
+    assertEq(updateStorageMirrorGuard.settingsHash(safe), settingsHash, 'Settings hash should be stored');
   }
 
   function testCheckAfterExecution(bytes32 _txHash) public {
     // Call checkTransaction to change didSettingsChange to true
     vm.prank(safe);
     updateStorageMirrorGuard.checkTransaction(
-      address(0), 0, '', Enum.Operation.Call, 0, 0, 0, address(0), payable(0), '', address(0)
+      address(0), 0, '', Enum.Operation.Call, 0, 0, 0, address(0), payable(0), '', safe
     );
 
     vm.mockCall(
@@ -59,30 +59,29 @@ contract UnitUpdateStorageMirrorGuard is Base {
     vm.prank(safe);
     updateStorageMirrorGuard.checkAfterExecution(_txHash, true);
 
-    assertFalse(updateStorageMirrorGuard.didSettingsChange());
-    assertEq(updateStorageMirrorGuard.settingsHash(), keccak256(abi.encodePacked('')), 'Settings hash should reset');
+    assertFalse(updateStorageMirrorGuard.didSettingsChange(safe));
   }
 
   function testCheckAfterExecutionNoSettingsChange(bytes32 _txHash) public {
     vm.prank(safe);
     updateStorageMirrorGuard.checkAfterExecution(_txHash, true);
 
-    assertFalse(updateStorageMirrorGuard.didSettingsChange());
-    assertEq(updateStorageMirrorGuard.settingsHash(), bytes32(''), 'Settings hash should stay empty');
+    assertFalse(updateStorageMirrorGuard.didSettingsChange(safe));
+    assertEq(updateStorageMirrorGuard.settingsHash(safe), bytes32(''), 'Settings hash should stay empty');
   }
 
   function testCheckAfterExecutionTxFailed(bytes32 _txHash) public {
     // Call checkTransaction to change didSettingsChange to true
     vm.prank(safe);
     updateStorageMirrorGuard.checkTransaction(
-      address(0), 0, '', Enum.Operation.Call, 0, 0, 0, address(0), payable(0), '', address(0)
+      address(0), 0, '', Enum.Operation.Call, 0, 0, 0, address(0), payable(0), '', safe
     );
 
     vm.prank(safe);
     updateStorageMirrorGuard.checkAfterExecution(_txHash, false);
 
     // Should be true since the tx failed to execute and thus didnt make it to reset
-    assertTrue(updateStorageMirrorGuard.didSettingsChange());
-    assertEq(updateStorageMirrorGuard.settingsHash(), settingsHash, 'Settings hash should stay the same');
+    assertTrue(updateStorageMirrorGuard.didSettingsChange(safe));
+    assertEq(updateStorageMirrorGuard.settingsHash(safe), settingsHash, 'Settings hash should stay the same');
   }
 }

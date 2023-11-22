@@ -6,9 +6,7 @@ import {StorageMirror} from 'contracts/StorageMirror.sol';
 import {IStorageMirror} from 'interfaces/IStorageMirror.sol';
 
 abstract contract Base is Test {
-  event SettingsUpdated(
-    address indexed _safe, bytes32 indexed _settingsHash, IStorageMirror.SafeSettings _safeSettings
-  );
+  event SettingsUpdated(address indexed _safe, bytes32 indexed _settingsHash);
 
   address public safe;
   StorageMirror public storageMirror;
@@ -27,10 +25,11 @@ contract UnitStorageMirror is Base {
     IStorageMirror.SafeSettings memory _safeSettings =
       IStorageMirror.SafeSettings({owners: _owners, threshold: _threshold});
 
-    vm.prank(safe);
-    storageMirror.update(_safeSettings);
-
     bytes32 _settingsHash = keccak256(abi.encode(_safeSettings));
+
+    vm.prank(safe);
+    storageMirror.update(_settingsHash);
+
     bytes32 _savedHash = storageMirror.latestSettingsHash(safe);
 
     assertEq(_settingsHash, _savedHash, 'Settings hash should be saved');
@@ -47,7 +46,7 @@ contract UnitStorageMirror is Base {
 
     vm.prank(safe);
     vm.expectEmit(true, true, true, true);
-    emit SettingsUpdated(safe, _expectedSettingsHash, _safeSettings);
-    storageMirror.update(_safeSettings);
+    emit SettingsUpdated(safe, _expectedSettingsHash);
+    storageMirror.update(keccak256(abi.encode(_safeSettings)));
   }
 }

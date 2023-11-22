@@ -24,12 +24,12 @@ contract UpdateStorageMirrorGuard is BaseGuard {
   /**
    * @notice A boolean that returns true if a tx is changing the safe's settings
    */
-  bool public didSettingsChange;
+  mapping(address => bool) public didSettingsChange;
 
   /**
    * @notice The hash of the new settings
    */
-  bytes32 public settingsHash;
+  mapping(address => bytes32) public settingsHash;
 
   constructor(IGuardCallbackModule _guardCallbackModule) {
     GUARD_CALLBACK_MODULE = _guardCallbackModule;
@@ -52,14 +52,16 @@ contract UpdateStorageMirrorGuard is BaseGuard {
     bytes memory _signatures,
     address _msgSender
   ) external {
-    didSettingsChange = true;
+    didSettingsChange[msg.sender] = true;
     // TODO: change these data with the decoded ones
     address[] memory _owners = new address[](1);
     IStorageMirror.SafeSettings memory _safeSettings = IStorageMirror.SafeSettings({owners: _owners, threshold: 1});
 
-    settingsHash = keccak256(abi.encode(_safeSettings));
+    bytes32 _settingsHash = keccak256(abi.encode(_safeSettings));
+    settingsHash[msg.sender] = _settingsHash;
+    didSettingsChange[msg.sender] = true;
 
-    emit SettingsChanged(msg.sender, settingsHash, _safeSettings);
+    emit SettingsChanged(msg.sender, _settingsHash, _safeSettings);
   }
 
   /**
@@ -68,10 +70,10 @@ contract UpdateStorageMirrorGuard is BaseGuard {
    * @dev The msg.sender should be the safe
    */
   function checkAfterExecution(bytes32 _txHash, bool _success) external {
-    if (didSettingsChange && _success) {
-      GUARD_CALLBACK_MODULE.saveUpdatedSettings(msg.sender, settingsHash);
-      didSettingsChange = false;
-      settingsHash = keccak256(abi.encodePacked(''));
+    if (didSettingsChange[msg.sender] && _success) {
+      // NOTE: No need to reset settings as this function will only be called when the settings change
+      GUARD_CALLBACK_MODULE.saveUpdatedSettings(msg.sender, settingsHash[msg.sender]);
+      didSettingsChange[msg.sender] = false;
     }
   }
 }
