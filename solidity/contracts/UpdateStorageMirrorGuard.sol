@@ -5,6 +5,7 @@ import {BaseGuard} from 'safe-contracts/base/GuardManager.sol';
 import {Enum} from 'safe-contracts/common/Enum.sol';
 import {IGuardCallbackModule} from 'interfaces/IGuardCallbackModule.sol';
 import {IStorageMirror} from 'interfaces/IStorageMirror.sol';
+import {ISafe} from 'interfaces/ISafe.sol';
 
 /**
  * @title UpdateStorageMirrorGuard
@@ -52,9 +53,11 @@ contract UpdateStorageMirrorGuard is BaseGuard {
    */
   function checkAfterExecution(bytes32 _txHash, bool _success) external {
     if (_success) {
-      address[] memory _owners = new address[](1);
-      _owners[0] = msg.sender;
-      IStorageMirror.SafeSettings memory _safeSettings = IStorageMirror.SafeSettings({owners: _owners, threshold: 1});
+      address[] memory _owners = ISafe(msg.sender).getOwners();
+      uint256 _threshold = ISafe(msg.sender).getThreshold();
+
+      IStorageMirror.SafeSettings memory _safeSettings =
+        IStorageMirror.SafeSettings({owners: _owners, threshold: _threshold});
       bytes32 _settingsHash = keccak256(abi.encode(_safeSettings));
 
       // NOTE: No need to reset settings as this function will only be called when the settings change
