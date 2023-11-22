@@ -24,12 +24,13 @@ import {IGnosisSafeProxyFactory} from 'test/e2e/IGnosisSafeProxyFactory.sol';
 import {TestConstants} from 'test/utils/TestConstants.sol';
 import {ContractDeploymentAddress} from 'test/utils/ContractDeploymentAddress.sol';
 
+// solhint-disable-next-line max-states-count
 contract CommonE2EBase is DSTestPlus, TestConstants {
   uint256 internal constant _MAINNET_FORK_BLOCK = 18_621_047;
   uint256 internal constant _OPTIMISM_FORK_BLOCK = 112_491_451;
 
-  uint256 internal _MAINNET_FORK_ID;
-  uint256 internal _OPTIMISM_FORK_ID;
+  uint256 internal _mainnetForkId;
+  uint256 internal _optimismForkId;
 
   address public deployer = makeAddr('deployer');
   address public deployerOptimism = makeAddr('deployerOptimism');
@@ -54,10 +55,10 @@ contract CommonE2EBase is DSTestPlus, TestConstants {
 
   function setUp() public virtual {
     // Set up both forks
-    _MAINNET_FORK_ID = vm.createFork(vm.rpcUrl('mainnet'), _MAINNET_FORK_BLOCK);
-    _OPTIMISM_FORK_ID = vm.createFork(vm.rpcUrl('optimism'), _OPTIMISM_FORK_BLOCK);
+    _mainnetForkId = vm.createFork(vm.rpcUrl('mainnet'), _MAINNET_FORK_BLOCK);
+    _optimismForkId = vm.createFork(vm.rpcUrl('optimism'), _OPTIMISM_FORK_BLOCK);
     // Select mainnet fork
-    vm.selectFork(_MAINNET_FORK_ID);
+    vm.selectFork(_mainnetForkId);
 
     // Make address and key of safe owner
     (safeOwner, safeOwnerKey) = makeAddrAndKey('safeOwner');
@@ -119,7 +120,7 @@ contract CommonE2EBase is DSTestPlus, TestConstants {
     );
 
     /// =============== NON HOME CHAIN ===============
-    vm.selectFork(_OPTIMISM_FORK_ID);
+    vm.selectFork(_optimismForkId);
     // Make address and key of non home chain safe owner
     (nonHomeChainSafeOwner, nonHomeChainSafeOwnerKey) = makeAddrAndKey('nonHomeChainSafeOwner');
 
@@ -127,7 +128,7 @@ contract CommonE2EBase is DSTestPlus, TestConstants {
 
     // Set up non home chain safe
     vm.prank(nonHomeChainSafeOwner);
-    nonHomeChainSafe = ISafe(address(gnosisSafeProxyFactory.createProxy(GNOSIS_SAFE_SINGLETON, ''))); // nonHomeChainSafeOwner nonce 0
+    nonHomeChainSafe = ISafe(address(gnosisSafeProxyFactory.createProxy(GNOSIS_SAFE_SINGLETON_L2, ''))); // nonHomeChainSafeOwner nonce 0
     label(address(nonHomeChainSafe), 'NonHomeChainSafeProxy');
 
     // Deploy non home chain contracts
@@ -160,7 +161,39 @@ contract CommonE2EBase is DSTestPlus, TestConstants {
     // enable verifier module
     enableModule(nonHomeChainSafe, nonHomeChainSafeOwner, nonHomeChainSafeOwnerKey, address(verifierModule));
 
+    // data to sign and send to set the guard
+    _setGuardData = abi.encodeWithSelector(ISafe.setGuard.selector, address(needsUpdateGuard));
+    _setGuardEncodedTxData = nonHomeChainSafe.encodeTransactionData(
+      address(nonHomeChainSafe),
+      0,
+      _setGuardData,
+      Enum.Operation.Call,
+      0,
+      0,
+      0,
+      address(0),
+      payable(0),
+      nonHomeChainSafe.nonce()
+    );
+
+    // signature
+    (_v, _r, _s) = vm.sign(nonHomeChainSafeOwnerKey, keccak256(_setGuardEncodedTxData));
+    _setGuardSignature = abi.encodePacked(_r, _s, _v);
+
     // set needs update guard
+    vm.prank(nonHomeChainSafeOwner);
+    nonHomeChainSafe.execTransaction(
+      address(nonHomeChainSafe),
+      0,
+      _setGuardData,
+      Enum.Operation.Call,
+      0,
+      0,
+      0,
+      address(0),
+      payable(0),
+      _setGuardSignature
+    );
   }
 
   /**
