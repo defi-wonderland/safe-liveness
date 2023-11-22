@@ -149,7 +149,7 @@ contract VerifierModule is IVerifierModule {
     uint256 _gasSpent = _startingGas - _gasLeft;
 
     // Gas spent plus 10% incentive
-    uint256 _incentive = _gasSpent * 10 / 100;
+    uint256 _incentive = _gasSpent + _gasSpent * 10 / 100;
 
     // Pay incentives
     ISafe(_safe).execTransactionFromModule(msg.sender, _incentive, '', Enum.Operation.Call);
