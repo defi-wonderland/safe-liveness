@@ -99,7 +99,7 @@ contract CommonE2EBase is DSTestPlus, TestConstants {
     safe.setup(_owners, 1, address(safe), bytes(''), address(0), address(0), 0, payable(0));
 
     // Enable guard callback module
-    enableModule(safe, safeOwner, safeOwnerKey, address(guardCallbackModule));
+    enableModule(safe, safeOwnerKey, address(guardCallbackModule));
 
     // data to sign and send to set the guard
     bytes memory _setGuardData = abi.encodeWithSelector(IGuardCallbackModule.setGuard.selector);
@@ -159,14 +159,14 @@ contract CommonE2EBase is DSTestPlus, TestConstants {
     // set up non home chain safe
     address[] memory _nonHomeChainSafeOwners = new address[](1);
     _nonHomeChainSafeOwners[0] = nonHomeChainSafeOwner;
-    // vm.prank(nonHomeChainSafeOwner); // nonHomeChainSafeOwner nonce 1
-    vm.broadcast(nonHomeChainSafeOwnerKey);
+
+    vm.broadcast(nonHomeChainSafeOwnerKey); // nonHomeChainSafeOwner nonce 1
     nonHomeChainSafe.setup(
       _nonHomeChainSafeOwners, 1, address(nonHomeChainSafe), bytes(''), address(0), address(0), 0, payable(0)
     );
 
     // enable verifier module
-    enableModule(nonHomeChainSafe, nonHomeChainSafeOwner, nonHomeChainSafeOwnerKey, address(verifierModule));
+    enableModule(nonHomeChainSafe, nonHomeChainSafeOwnerKey, address(verifierModule));
 
     // data to sign and send to set the guard
     _setGuardData = abi.encodeWithSelector(ISafe.setGuard.selector, address(needsUpdateGuard));
@@ -206,11 +206,10 @@ contract CommonE2EBase is DSTestPlus, TestConstants {
   /**
    * @notice Enables a module for the given safe
    * @param _safe The safe that will enable the module
-   * @param _safeOwner The address of the owner of the safe
    * @param _safeOwnerKey The private key to sign the tx
    * @param _module The module address to enable
    */
-  function enableModule(ISafe _safe, address _safeOwner, uint256 _safeOwnerKey, address _module) public {
+  function enableModule(ISafe _safe, uint256 _safeOwnerKey, address _module) public {
     uint256 _safeNonce = _safe.nonce();
     // data to sign to enable module
     bytes memory _enableModuleData = abi.encodeWithSelector(ISafe.enableModule.selector, address(_module));
