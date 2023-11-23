@@ -33,15 +33,16 @@ jobs:
       - name: "Create env file"
         run: |
           touch .env
-          echo MAINNET_RPC="${{ secrets.MAINNET_E2E_RPC }}" >> .env
+          echo MAINNET_RPC="${{ secrets.MAINNET_RPC }}" >> .env
           echo GOERLI_RPC="${{ secrets.GOERLI_RPC }}" >> .env
-          echo OPTIMISM_RPC="${{ secrets.OPTIMISM_E2E_RPC }}" >> .env
+          echo OPTIMISM_RPC="${{ secrets.OPTIMISM_RPC }}" >> .env
+          echo MAINNET_E2E_RPC="${{ secrets.MAINNET_E2E_RPC }}" >> .env
+          echo OPTIMISM_E2E_RPC="${{ secrets.OPTIMISM_E2E_RPC }}" >> .env
           echo MAINNET_SAFE_OWNER_ADDR="${{ secrets.MAINNET_SAFE_OWNER_ADDR }}" >> .env
           echo MAINNET_SAFE_OWNER_PK="${{ secrets.MAINNET_SAFE_OWNER_PK }}" >> .env
           echo MAINNET_DEPlOYER_ADDR="${{ secrets.MAINNET_DEPlOYER_ADDR }}" >> .env
           echo MAINNET_DEPlOYER_PK="${{ secrets.MAINNET_DEPlOYER_PK }}" >> .env
           cat .env
-          source .env
 
       - name: Run Anvil Mainnet
         run: yarn anvil:mainnet
