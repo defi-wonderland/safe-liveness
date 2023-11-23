@@ -16,17 +16,20 @@ out = 'out'
 libs = ['lib']
 fuzz_runs = 1000
 optimizer_runs = 10_000
+fs_permissions = [{ access = "read-write", path = "./"}]
 
 [profile.optimized]
 via_ir = true
 out = 'out-via-ir'
 fuzz_runs = 5000
+fs_permissions = [{ access = "read-write", path = "./"}]
 
 [profile.test]
 via_ir = true
 out = 'out-via-ir'
 fuzz_runs = 5000
 src = 'solidity/test'
+fs_permissions = [{ access = "read-write", path = "./"}]
 
 [rpc_endpoints]
 mainnet = "${MAINNET_RPC}"

@@ -25,6 +25,17 @@ def request_block_header(rpc_endpoint, block_number):
 
     return (block_number, block_header_fields)
 
+def mine_anvil_block(rpc_endpoint):
+    r = requests.post(rpc_endpoint, json={
+        "jsonrpc": "2.0",
+        "method": "anvil_mine",
+        "params": [],
+        "id": 1,
+    })
+
+    result = get_json_rpc_result(r)
+    return result
+
 
 def request_account_proof(rpc_endpoint, block_number, address, slots):
     hex_slots = [to_0x_string(s) for s in slots]

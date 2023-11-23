@@ -2,7 +2,7 @@ import argparse
 import json
 import rlp
 
-from proof_utils import request_block_header, request_account_proof
+from proof_utils import request_block_header, request_account_proof, mine_anvil_block
 
 def main():
   # Parse command line arguments
@@ -31,12 +31,13 @@ def main():
   args = parser.parse_args()
 
   rpc_endpoint = args.rpc
-  block_number = args.block_number
+  block_number = args.block_number + 1
   storage_mirror_contract_address = args.contract
   storage_slot = args.slot
+  clean_storage_slot = bytes.fromhex(storage_slot[2:])
 
   # Generate proof data
-  (block_number, block_header, acct_proof, storage_proofs) = generate_proof_data(rpc_endpoint, block_number, storage_mirror_contract_address, [storage_slot])
+  (block_number, block_header, acct_proof, storage_proofs) = generate_proof_data(rpc_endpoint, block_number, storage_mirror_contract_address, [clean_storage_slot])
   
   # Encode the proof data
   account_proof = rlp.encode(acct_proof)

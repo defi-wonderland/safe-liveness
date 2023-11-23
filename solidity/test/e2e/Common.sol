@@ -5,6 +5,7 @@ import {DSTestPlus} from '@defi-wonderland/solidity-utils/solidity/test/DSTestPl
 import {IERC20} from 'isolmate/interfaces/tokens/IERC20.sol';
 import {SafeProxy} from 'safe-contracts/proxies/SafeProxy.sol';
 import {Enum} from 'safe-contracts/common/Enum.sol';
+import {Script} from 'forge-std/Script.sol';
 
 import {StorageMirror} from 'contracts/StorageMirror.sol';
 import {UpdateStorageMirrorGuard} from 'contracts/UpdateStorageMirrorGuard.sol';
@@ -25,7 +26,7 @@ import {TestConstants} from 'test/utils/TestConstants.sol';
 import {ContractDeploymentAddress} from 'test/utils/ContractDeploymentAddress.sol';
 
 // solhint-disable-next-line max-states-count
-contract CommonE2EBase is DSTestPlus, TestConstants {
+contract CommonE2EBase is DSTestPlus, TestConstants, Script {
   uint256 internal constant _MAINNET_FORK_BLOCK = 18_621_047;
   uint256 internal constant _OPTIMISM_FORK_BLOCK = 112_491_451;
 
@@ -54,9 +55,20 @@ contract CommonE2EBase is DSTestPlus, TestConstants {
   IGnosisSafeProxyFactory public gnosisSafeProxyFactory = IGnosisSafeProxyFactory(GNOSIS_SAFE_PROXY_FACTORY);
 
   function setUp() public virtual {
+    string[] memory _commands = new string[](5);
+    _commands[0] = 'forge';
+    _commands[1] = 'script';
+    _commands[2] = 'solidity/scripts/DeployE2E.s.sol:DeployE2E';
+    _commands[3] = '--broadcast';
+    _commands[4] = '--via-ir';
+
+    vm.ffi(_commands);
+
+    // NOTE: BELOW IS UNNECCESARY LOGIC I JUST HAVENT REMOVED IT YET
+
     // Set up both forks
-    _mainnetForkId = vm.createFork(vm.rpcUrl('mainnet_e2e'), _MAINNET_FORK_BLOCK);
-    _optimismForkId = vm.createFork(vm.rpcUrl('optimism_e2e'), _OPTIMISM_FORK_BLOCK);
+    _mainnetForkId = vm.createSelectFork(vm.rpcUrl('mainnet_e2e'), _MAINNET_FORK_BLOCK);
+    _optimismForkId = vm.createSelectFork(vm.rpcUrl('optimism_e2e'), _OPTIMISM_FORK_BLOCK);
     // Select mainnet fork
     vm.selectFork(_mainnetForkId);
 
@@ -226,5 +238,32 @@ contract CommonE2EBase is DSTestPlus, TestConstants {
     _safe.execTransaction(
       address(_safe), 0, _enableModuleData, Enum.Operation.Call, 0, 0, 0, address(0), payable(0), _enableModuleSignature
     );
+  }
+
+  function getProof(
+    string memory _blockNumber,
+    string memory _rpc,
+    string memory _contractAddress,
+    string memory _storageSlot
+  ) public returns (bytes memory _storageProof, bytes memory _accountProof, bytes memory _blockHeader) {
+    string[] memory _commands = new string[](10);
+    _commands[0] = 'yarn';
+    _commands[1] = 'proof';
+    _commands[2] = '--block-number';
+    _commands[3] = _blockNumber;
+    _commands[4] = '--rpc';
+    _commands[5] = _rpc;
+    _commands[6] = '--contract';
+    _commands[7] = _contractAddress;
+    _commands[8] = '--slot';
+    _commands[9] = _storageSlot;
+
+    bytes memory _res = vm.ffi(_commands);
+    string memory _output = string(_res);
+    emit log_string(_output);
+
+    _storageProof = vm.parseJson(_output, 'storageProof');
+    _blockHeader = vm.parseJson(_output, 'blockHeader');
+    _accountProof = vm.parseJson(_output, 'accountProof');
   }
 }

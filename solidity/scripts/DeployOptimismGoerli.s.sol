@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity =0.8.19;
 
-import {DeployNonHomeChain, DeployVars} from 'scripts/DeployNonHomeChain.s.sol';
+import {DeployNonHomeChain, DeployVarsNonHomeChain} from 'scripts/DeployNonHomeChain.s.sol';
 
 // We threat Goerli as the Home Chain in this case
 contract DeployOptimismGoerli is DeployNonHomeChain {
@@ -11,9 +11,9 @@ contract DeployOptimismGoerli is DeployNonHomeChain {
   function run() external {
     vm.startBroadcast(deployer);
 
-    DeployVars memory _deployVars = DeployVars(deployer, storageMirrorAddress);
+    DeployVarsNonHomeChain memory _deployVars = DeployVarsNonHomeChain(deployer, storageMirrorAddress);
     // Deploy protocol
-    _deploy(_deployVars);
+    _deployNonHomeChain(_deployVars);
 
     vm.stopBroadcast();
   }

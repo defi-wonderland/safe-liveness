@@ -15,13 +15,13 @@ import {IStorageMirrorRootRegistry} from 'interfaces/IStorageMirrorRootRegistry.
 import {TestConstants} from 'test/utils/TestConstants.sol';
 import {ContractDeploymentAddress} from 'test/utils/ContractDeploymentAddress.sol';
 
-struct DeployVars {
+struct DeployVarsNonHomeChain {
   address deployer;
   address storageMirror;
 }
 
 abstract contract DeployNonHomeChain is Script, TestConstants {
-  function _deploy(DeployVars memory _deployVars)
+  function _deployNonHomeChain(DeployVarsNonHomeChain memory _deployVars)
     internal
     returns (
       BlockHeaderOracle _blockHeaderOracle,
@@ -49,5 +49,13 @@ abstract contract DeployNonHomeChain is Script, TestConstants {
 
     _needsUpdateGuard = new NeedsUpdateGuard(_verifierModule); // deployer nonce 3
     console.log('NEEDS_UPDATE_GUARD: ', address(_needsUpdateGuard));
+
+    string memory _objectKey = 'deployments';
+    vm.serializeAddress(_objectKey, 'BlockHeaderOracle', address(_blockHeaderOracle));
+    vm.serializeAddress(_objectKey, 'NeedsUpdateGuard', address(_needsUpdateGuard));
+    vm.serializeAddress(_objectKey, 'StorageMirrorRootRegistry', address(_storageMirrorRootRegistry));
+    string memory _output = vm.serializeAddress(_objectKey, 'VerifierModule', address(_verifierModule));
+
+    vm.writeJson(_output, './solidity/scripts/NonHomeChainDeployments.json');
   }
 }
