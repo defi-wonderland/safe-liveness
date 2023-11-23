@@ -18,3 +18,6 @@ out/*/*
 
 # Keep the latest deployment only
 broadcast/*/*/*
+
+# Cache for the python scripts
+proofs/__pycache__/*
