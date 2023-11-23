@@ -57,6 +57,27 @@ contract VerifierModule is IVerifierModule {
   }
 
   /**
+   * @notice Sets the storage mirror storage root in the registry, verifies it, and then updates the safe in one call
+   *
+   * @param _safe The address of the safe that has new settings
+   * @param _proposedSettings The new settings that are being proposed
+   * @param _storageMirrorAccountProof The account proof of the StorageMirror contract on the home chain
+   * @param _storageMirrorStorageProof The storage proof of the StorageMirror contract on the home chain
+   * @param _arbitraryTxnParams The transaction parameters for the arbitrary safe transaction that will execute
+   */
+
+  function extractStorageRootAndVerifyUpdate(
+    address _safe,
+    IStorageMirror.SafeSettings calldata _proposedSettings,
+    bytes memory _storageMirrorAccountProof,
+    bytes memory _storageMirrorStorageProof,
+    SafeTxnParams calldata _arbitraryTxnParams
+  ) external {
+    STORAGE_MIRROR_ROOT_REGISTRY.proposeAndVerifyStorageMirrorStorageRoot(_storageMirrorAccountProof);
+    _proposeAndVerifyUpdate(_safe, _proposedSettings, _storageMirrorStorageProof, _arbitraryTxnParams);
+  }
+
+  /**
    * @notice Verifies the new settings that are incoming against a storage proof from the StorageMirror on the home chain
    *
    * @param _safe The address of the safe that has new settings
@@ -80,6 +101,7 @@ contract VerifierModule is IVerifierModule {
    * @param _blockHeader The block header of the latest block
    * @return _storageRoot The verified storage root
    * @return _blockNumber The block number from the _blockHeader
+
    */
   function extractStorageMirrorStorageRoot(
     bytes memory _storageMirrorAccountProof,
