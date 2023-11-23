@@ -36,15 +36,17 @@ def main():
   storage_slot = args.slot
 
   # Generate proof data
-  (block_number, acct_proof, storage_proofs) = generate_proof_data(rpc_endpoint, block_number, storage_mirror_contract_address, [storage_slot])
+  (block_number, block_header, acct_proof, storage_proofs) = generate_proof_data(rpc_endpoint, block_number, storage_mirror_contract_address, [storage_slot])
   
   # Encode the proof data
   account_proof = rlp.encode(acct_proof)
   storage_proof = rlp.encode(storage_proofs[0])
+  encoded_block_header = rlp.encode(block_header)
 
   # Output the proof data in JSON format
   output = {
     "blockNumber": block_number,
+    "blockHeader": encoded_block_header.hex(),
     "accountProof": account_proof.hex(),
     "storageProof": storage_proof.hex()
   }
@@ -76,6 +78,7 @@ def generate_proof_data(
 
     return (
         block_number,
+        block_header,
         acct_proof,
         storage_proofs
     )

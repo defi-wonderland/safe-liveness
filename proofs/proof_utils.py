@@ -7,7 +7,7 @@ from utils import normalize_bytes, normalize_int, decode_hex, to_0x_string
 BLOCK_HEADER_FIELDS = [
     "parentHash", "sha3Uncles", "miner", "stateRoot", "transactionsRoot",
     "receiptsRoot", "logsBloom", "difficulty", "number", "gasLimit",
-    "gasUsed", "timestamp", "extraData", "mixHash", "nonce", "baseFeePerGas"
+    "gasUsed", "timestamp", "extraData", "mixHash", "nonce"
 ]
 
 
