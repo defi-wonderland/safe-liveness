@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity >=0.8.4 <0.9.0;
+pragma solidity =0.8.19;
 
 import {Script} from 'forge-std/Script.sol';
 import {console} from 'forge-std/console.sol';
@@ -15,7 +15,7 @@ struct DeployVars {
   address deployer;
 }
 
-abstract contract Deploy is Script, TestConstants {
+abstract contract DeployHomeChain is Script, TestConstants {
   function _deploy(DeployVars memory _deployVars)
     internal
     returns (

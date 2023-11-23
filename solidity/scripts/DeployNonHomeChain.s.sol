@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity >=0.8.4 <0.9.0;
+pragma solidity =0.8.19;
 
 import {Script} from 'forge-std/Script.sol';
 import {console} from 'forge-std/console.sol';
@@ -20,7 +20,7 @@ struct DeployVars {
   address storageMirror;
 }
 
-abstract contract Deploy is Script, TestConstants {
+abstract contract DeployNonHomeChain is Script, TestConstants {
   function _deploy(DeployVars memory _deployVars)
     internal
     returns (
@@ -34,7 +34,7 @@ abstract contract Deploy is Script, TestConstants {
     uint256 _currentNonce = vm.getNonce(_deployVars.deployer);
 
     address _storageMirrorRootRegistryTheoriticalAddress =
-      ContractDeploymentAddress.addressFrom(_deployVars.deployer, 2);
+      ContractDeploymentAddress.addressFrom(_deployVars.deployer, _currentNonce + 2);
 
     _blockHeaderOracle = new BlockHeaderOracle(); // deployer nonce 0
     console.log('ORACLE: ', address(_blockHeaderOracle));
