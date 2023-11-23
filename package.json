@@ -20,6 +20,7 @@
     "lint:sol-logic": "solhint -c .solhint.json 'solidity/contracts/**/*.sol' 'solidity/interfaces/**/*.sol'",
     "lint:sol-tests": "solhint 'solidity/test/**/*.sol'",
     "prepare": "husky install",
+    "proof": "python3 proofs/generate_proof.py",
     "test": "forge test -vvv",
     "test:e2e": "forge test --match-contract E2E -vvv",
     "test:unit": "forge test --match-contract Unit -vvv",
