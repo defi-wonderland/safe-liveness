@@ -101,7 +101,6 @@ contract VerifierModule is IVerifierModule {
    * @param _blockHeader The block header of the latest block
    * @return _storageRoot The verified storage root
    * @return _blockNumber The block number from the _blockHeader
-
    */
   function extractStorageMirrorStorageRoot(
     bytes memory _storageMirrorAccountProof,
