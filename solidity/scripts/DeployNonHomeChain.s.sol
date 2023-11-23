@@ -4,7 +4,7 @@ pragma solidity =0.8.19;
 import {Script} from 'forge-std/Script.sol';
 import {console} from 'forge-std/console.sol';
 
-import {BlockHeaderOracle} from 'contracts/BlockheaderOracle.sol';
+import {BlockHeaderOracle} from 'contracts/BlockHeaderOracle.sol';
 import {NeedsUpdateGuard} from 'contracts/NeedsUpdateGuard.sol';
 import {StorageMirrorRootRegistry} from 'contracts/StorageMirrorRootRegistry.sol';
 import {VerifierModule} from 'contracts/VerifierModule.sol';
