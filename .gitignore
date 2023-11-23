@@ -20,4 +20,4 @@ out/*/*
 broadcast/*/*/*
 
 # Cache for the python scripts
-python/__pycache__/*
+proofs/__pycache__/*
