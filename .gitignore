@@ -19,5 +19,10 @@ out/*/*
 # Keep the latest deployment only
 broadcast/*/*/*
 
+# Docs build files
+docs/book
+docs/src/solidity/interfaces
+docs/src/static
+
 # Cache for the python scripts
 proofs/__pycache__/*
