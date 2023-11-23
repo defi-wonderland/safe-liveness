@@ -51,18 +51,16 @@ contract CommonE2EBase is DSTestPlus, TestConstants {
   StorageMirrorRootRegistry public storageMirrorRootRegistry;
   ISafe public safe;
   ISafe public nonHomeChainSafe;
-  // IVerifierModule public verifierModule = IVerifierModule(makeAddr('verifierModule'));
   IGnosisSafeProxyFactory public gnosisSafeProxyFactory = IGnosisSafeProxyFactory(GNOSIS_SAFE_PROXY_FACTORY);
 
   function setUp() public virtual {
     // Set up both forks
-    _mainnetForkId = vm.createFork(vm.rpcUrl('mainnet'), _MAINNET_FORK_BLOCK);
-    _optimismForkId = vm.createFork(vm.rpcUrl('optimism'), _OPTIMISM_FORK_BLOCK);
+    _mainnetForkId = vm.createFork(vm.rpcUrl('mainnet_e2e'), _MAINNET_FORK_BLOCK);
+    _optimismForkId = vm.createFork(vm.rpcUrl('optimism_e2e'), _OPTIMISM_FORK_BLOCK);
     // Select mainnet fork
     vm.selectFork(_mainnetForkId);
 
     // Make address and key of safe owner
-    // (safeOwner, safeOwnerKey) = makeAddrAndKey('safeOwner');
     safeOwner = vm.envAddress('MAINNET_SAFE_OWNER_ADDR');
     safeOwnerKey = vm.envUint('MAINNET_SAFE_OWNER_PK');
 
@@ -71,35 +69,22 @@ contract CommonE2EBase is DSTestPlus, TestConstants {
     deployerKey = vm.envUint('MAINNET_DEPLOYER_PK');
 
     /// =============== HOME CHAIN ===============
-    // vm.prank(safeOwner);
     vm.broadcast(safeOwnerKey);
     safe = ISafe(address(gnosisSafeProxyFactory.createProxy(GNOSIS_SAFE_SINGLETON, ''))); // safeOwner nonce 0
     label(address(safe), 'SafeProxy');
 
     uint256 _nonce = vm.getNonce(deployer);
-    emit log_named_uint('deployer nonce', _nonce);
 
     address _updateStorageMirrorGuardTheoriticalAddress = ContractDeploymentAddress.addressFrom(deployer, _nonce + 2);
 
-    // vm.prank(deployer);
     vm.broadcast(deployer);
     storageMirror = new StorageMirror(); // deployer nonce 0
     label(address(storageMirror), 'StorageMirror');
 
-    // string[] memory inputs = new string[](4);
-    // inputs[0] = 'cast';
-    // inputs[1] = 'proof';
-    // inputs[2] = toString(address(storageMirror));
-    // inputs[3] = '0';
-    // bytes memory _res = vm.ffi(inputs);
-    // emit log_bytes(_res);
-
-    // vm.prank(deployer);
     vm.broadcast(deployer);
     guardCallbackModule = new GuardCallbackModule(address(storageMirror), _updateStorageMirrorGuardTheoriticalAddress); // deployer nonce 1
     label(address(guardCallbackModule), 'GuardCallbackModule');
 
-    // vm.prank(deployer);
     vm.broadcast(deployer);
     updateStorageMirrorGuard = new UpdateStorageMirrorGuard(guardCallbackModule); // deployer nonce 2
     label(address(updateStorageMirrorGuard), 'UpdateStorageMirrorGuard');
@@ -110,8 +95,7 @@ contract CommonE2EBase is DSTestPlus, TestConstants {
     // Set up owner home chain safe
     address[] memory _owners = new address[](1);
     _owners[0] = safeOwner;
-    // vm.prank(safeOwner); // safeOwner nonce 1
-    vm.broadcast(safeOwnerKey);
+    vm.broadcast(safeOwnerKey); // safeOwner nonce 1
     safe.setup(_owners, 1, address(safe), bytes(''), address(0), address(0), 0, payable(0));
 
     // Enable guard callback module
@@ -128,7 +112,6 @@ contract CommonE2EBase is DSTestPlus, TestConstants {
     bytes memory _setGuardSignature = abi.encodePacked(_r, _s, _v);
 
     // execute setup of guard
-    // vm.prank(safeOwner);
     vm.broadcast(safeOwnerKey);
     safe.execTransaction(
       address(guardCallbackModule),
@@ -151,29 +134,24 @@ contract CommonE2EBase is DSTestPlus, TestConstants {
     address _storageMirrorRootRegistryTheoriticalAddress = ContractDeploymentAddress.addressFrom(deployerOptimism, 2);
 
     // Set up non home chain safe
-    // vm.prank(nonHomeChainSafeOwner);
     vm.broadcast(nonHomeChainSafeOwnerKey);
     nonHomeChainSafe = ISafe(address(gnosisSafeProxyFactory.createProxy(GNOSIS_SAFE_SINGLETON_L2, ''))); // nonHomeChainSafeOwner nonce 0
     label(address(nonHomeChainSafe), 'NonHomeChainSafeProxy');
 
     // Deploy non home chain contracts
-    // vm.prank(deployerOptimism);
     oracle = new BlockHeaderOracle(); // deployerOptimism nonce 0
     label(address(oracle), 'BlockHeaderOracle');
 
-    // vm.prank(deployerOptimism);
     vm.broadcast(deployerOptimism);
     verifierModule =
     new VerifierModule(IStorageMirrorRootRegistry(_storageMirrorRootRegistryTheoriticalAddress), address(storageMirror)); // deployerOptimism nonce 1
     label(address(verifierModule), 'VerifierModule');
 
-    // vm.prank(deployerOptimism);
     vm.broadcast(deployerOptimism);
     storageMirrorRootRegistry =
       new StorageMirrorRootRegistry(address(storageMirror), IVerifierModule(verifierModule), IBlockHeaderOracle(oracle)); // deployerOptimism nonce 2
     label(address(storageMirrorRootRegistry), 'StorageMirrorRootRegistry');
 
-    // vm.prank(deployerOptimism);
     vm.broadcast(deployerOptimism);
     needsUpdateGuard = new NeedsUpdateGuard(verifierModule); // deployer nonce 3
     label(address(needsUpdateGuard), 'NeedsUpdateGuard');
@@ -210,7 +188,6 @@ contract CommonE2EBase is DSTestPlus, TestConstants {
     _setGuardSignature = abi.encodePacked(_r, _s, _v);
 
     // set needs update guard
-    // vm.prank(nonHomeChainSafeOwner);
     vm.broadcast(nonHomeChainSafeOwnerKey);
     nonHomeChainSafe.execTransaction(
       address(nonHomeChainSafe),
@@ -246,35 +223,9 @@ contract CommonE2EBase is DSTestPlus, TestConstants {
     bytes memory _enableModuleSignature = abi.encodePacked(_r, _s, _v);
 
     // execute enable module
-    // vm.prank(safeOwner);
     vm.broadcast(safeOwnerKey);
     _safe.execTransaction(
       address(_safe), 0, _enableModuleData, Enum.Operation.Call, 0, 0, 0, address(0), payable(0), _enableModuleSignature
     );
-  }
-
-  function toString(address account) public pure returns (string memory) {
-    return toString(abi.encodePacked(account));
-  }
-
-  function toString(uint256 value) public pure returns (string memory) {
-    return toString(abi.encodePacked(value));
-  }
-
-  function toString(bytes32 value) public pure returns (string memory) {
-    return toString(abi.encodePacked(value));
-  }
-
-  function toString(bytes memory data) public pure returns (string memory) {
-    bytes memory alphabet = '0123456789abcdef';
-
-    bytes memory str = new bytes(2 + data.length * 2);
-    str[0] = '0';
-    str[1] = 'x';
-    for (uint256 i = 0; i < data.length; i++) {
-      str[2 + i * 2] = alphabet[uint256(uint8(data[i] >> 4))];
-      str[3 + i * 2] = alphabet[uint256(uint8(data[i] & 0x0f))];
-    }
-    return string(str);
   }
 }
