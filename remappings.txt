@@ -10,3 +10,4 @@ contracts/=solidity/contracts
 interfaces/=solidity/interfaces
 test/=solidity/test
 libraries/=solidity/libraries
+scripts/=solidity/scripts/

@@ -57,6 +57,27 @@ contract VerifierModule is IVerifierModule {
   }
 
   /**
+   * @notice Sets the storage mirror storage root in the registry, verifies it, and then updates the safe in one call
+   *
+   * @param _safe The address of the safe that has new settings
+   * @param _proposedSettings The new settings that are being proposed
+   * @param _storageMirrorAccountProof The account proof of the StorageMirror contract on the home chain
+   * @param _storageMirrorStorageProof The storage proof of the StorageMirror contract on the home chain
+   * @param _arbitraryTxnParams The transaction parameters for the arbitrary safe transaction that will execute
+   */
+
+  function extractStorageRootAndVerifyUpdate(
+    address _safe,
+    IStorageMirror.SafeSettings calldata _proposedSettings,
+    bytes memory _storageMirrorAccountProof,
+    bytes memory _storageMirrorStorageProof,
+    SafeTxnParams calldata _arbitraryTxnParams
+  ) external {
+    STORAGE_MIRROR_ROOT_REGISTRY.proposeAndVerifyStorageMirrorStorageRoot(_storageMirrorAccountProof);
+    _proposeAndVerifyUpdate(_safe, _proposedSettings, _storageMirrorStorageProof, _arbitraryTxnParams);
+  }
+
+  /**
    * @notice Verifies the new settings that are incoming against a storage proof from the StorageMirror on the home chain
    *
    * @param _safe The address of the safe that has new settings
@@ -114,6 +135,7 @@ contract VerifierModule is IVerifierModule {
     bytes memory _storageMirrorStorageProof,
     SafeTxnParams calldata _arbitraryTxnParams
   ) internal {
+    uint256 _startingGas = gasleft();
     bytes32 _hashedProposedSettings = _verifyNewSettings(_safe, _proposedSettings, _storageMirrorStorageProof);
 
     // If we dont revert from the _verifyNewSettings() call, then we can update the safe
@@ -134,15 +156,24 @@ contract VerifierModule is IVerifierModule {
       _arbitraryTxnParams.signatures
     );
 
-    // Pay incentives
-    // TODO: Calculations for incentives so its not hardcoded to 1e18
-    ISafe(_safe).execTransactionFromModule(msg.sender, 1e18, '', Enum.Operation.Call);
-
     // Make the storage updates at the end of the call to save gas in a revert scenario
     latestVerifiedSettings[_safe] = _hashedProposedSettings;
     latestVerifiedSettingsTimestamp[_safe] = block.timestamp;
 
     emit VerifiedUpdate(_safe, _hashedProposedSettings);
+
+    // NOTE: This is not the exact gas spent as we still have to make the transaction after the calculation
+    // NOTE: We do all this at the end of the call to get the most accurate gas calculations
+
+    uint256 _gasLeft = gasleft();
+
+    uint256 _gasSpent = _startingGas - _gasLeft;
+
+    // Gas spent plus 10% incentive
+    uint256 _incentive = _gasSpent + _gasSpent * 10 / 100;
+
+    // Pay incentives
+    ISafe(_safe).execTransactionFromModule(msg.sender, _incentive, '', Enum.Operation.Call);
   }
 
   /**

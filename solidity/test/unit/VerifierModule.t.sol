@@ -82,13 +82,24 @@ contract TestVerifierModule is VerifierModule {
     _bytes32 = _bytesToBytes32(_bytes);
   }
 
+  function extractStorageRootAndVerifyUpdateTest(
+    address _safe,
+    IStorageMirror.SafeSettings calldata _proposedSettings,
+    bytes memory _storageMirrorAccountProof,
+    bytes memory _storageMirrorStorageProof,
+    SafeTxnParams calldata _arbitraryTxnParams
+  ) external {
+    STORAGE_MIRROR_ROOT_REGISTRY.proposeAndVerifyStorageMirrorStorageRoot(_storageMirrorAccountProof);
+    proposeAndVerifyUpdateTest(_safe, _proposedSettings, _storageMirrorStorageProof, _arbitraryTxnParams);
+  }
+
   // NOTE: Needs to match the proposeAndVerify function logic with the fake MPT because we cant mock librariers
   function proposeAndVerifyUpdateTest(
     address _safe,
     IStorageMirror.SafeSettings calldata _proposedSettings,
     bytes memory _storageMirrorStorageProof,
     IVerifierModule.SafeTxnParams calldata _safeTxnParams
-  ) external {
+  ) public {
     bytes32 _hashedProposedSettings = verifyNewSettings(_safe, _proposedSettings, _storageMirrorStorageProof);
 
     // If we dont revert from the _verifyNewSettings() call, then we can update the safe
@@ -137,7 +148,7 @@ contract TestVerifierModule is VerifierModule {
 
     // Extract the storage root from the output of the MPT
     _storageRoot = mpt.extractStorageRootFromAccount(_rlpAccount);
-    _blockNumber = 500;
+    _blockNumber = _parsedBlockHeader.number;
   }
 }
 
@@ -719,6 +730,116 @@ contract UnitMerklePatriciaTree is Base {
       'Storage should be updated'
     );
     assertEq(verifierModule.latestVerifiedSettingsTimestamp(_fakeSafe), _fakeTimestamp, 'Timestamp should be updated');
+  }
+
+  function testExtractRootAndVerifyUpdate(
+    IStorageMirror.SafeSettings memory _fakeSettings,
+    bytes memory _accountProof
+  ) public {
+    uint256 _fakeTimestamp = 1_234_567_890;
+
+    vm.warp(_fakeTimestamp);
+    vm.assume(_accountProof.length > 0);
+
+    address[] memory _oldOwners = _fakeSettings.owners;
+
+    vm.mockCall(_fakeSafe, abi.encodeWithSelector(ISafe.getOwners.selector), abi.encode(_oldOwners));
+
+    vm.mockCall(_fakeSafe, abi.encodeWithSelector(ISafe.getThreshold.selector), abi.encode(_fakeSettings.threshold));
+
+    vm.mockCall(_fakeSafe, abi.encodeWithSelector(ISafe.isOwner.selector), abi.encode(true));
+
+    vm.mockCall(
+      _fakeSafe,
+      abi.encodeWithSelector(
+        ISafe.execTransactionFromModule.selector,
+        _fakeSafe,
+        0,
+        abi.encodeWithSelector(ISafe.addOwnerWithThreshold.selector, address(0x4), 2),
+        Enum.Operation.Call
+      ),
+      abi.encode(true)
+    );
+
+    bytes32 _fakeStorageRoot = keccak256(abi.encode(bytes32(uint256(1))));
+
+    bytes memory _storageProof = hex'e10e2d527612073b26eecdfd717e6a320f';
+
+    vm.mockCall(
+      address(_storageMirrorRegistry),
+      abi.encodeWithSelector(IStorageMirrorRootRegistry.latestVerifiedStorageMirrorStorageRoot.selector),
+      abi.encode(_fakeStorageRoot)
+    );
+
+    bytes32 _safeSettingsSlot = keccak256(abi.encode(_fakeSafe, 0));
+
+    bytes32 _safeSettingsSlotHash = keccak256(abi.encode(_safeSettingsSlot));
+
+    bytes memory _expectedOutput = abi.encodePacked(keccak256(abi.encode(_fakeSettings)));
+
+    vm.mockCall(
+      address(mpt),
+      abi.encodeWithSelector(
+        TestMPT.extractProofValue.selector, _fakeStorageRoot, abi.encodePacked(_safeSettingsSlotHash), _storageProof
+      ),
+      abi.encode(_expectedOutput)
+    );
+
+    IVerifierModule.SafeTxnParams memory _txDetails = IVerifierModule.SafeTxnParams({
+      to: _fakeSafe,
+      value: 0,
+      data: abi.encodeWithSelector(ISafe.addOwnerWithThreshold.selector, address(0x4), 2),
+      operation: Enum.Operation.Call,
+      safeTxGas: 0,
+      baseGas: 0,
+      gasPrice: 0,
+      gasToken: address(0),
+      refundReceiver: payable(address(0)),
+      signatures: ''
+    });
+
+    vm.mockCall(
+      _fakeSafe,
+      abi.encodeWithSelector(ISafe.execTransactionFromModule.selector, address(this), 1e18, '', Enum.Operation.Call),
+      abi.encode(true)
+    );
+
+    vm.mockCall(
+      _fakeSafe,
+      abi.encodeWithSelector(
+        ISafe.execTransaction.selector,
+        _txDetails.to,
+        _txDetails.value,
+        _txDetails.data,
+        _txDetails.operation,
+        _txDetails.safeTxGas,
+        _txDetails.baseGas,
+        _txDetails.gasPrice,
+        _txDetails.gasToken,
+        _txDetails.refundReceiver,
+        _txDetails.signatures
+      ),
+      abi.encode(true)
+    );
+
+    vm.mockCall(
+      address(_storageMirrorRegistry),
+      abi.encodeWithSelector(
+        IStorageMirrorRootRegistry.proposeAndVerifyStorageMirrorStorageRoot.selector, _accountProof
+      ),
+      abi.encode()
+    );
+
+    vm.expectCall(
+      address(_storageMirrorRegistry),
+      abi.encodeWithSelector(
+        IStorageMirrorRootRegistry.proposeAndVerifyStorageMirrorStorageRoot.selector, _accountProof
+      )
+    );
+
+    verifierModule.extractStorageRootAndVerifyUpdateTest(
+      _fakeSafe, _fakeSettings, _accountProof, _storageProof, _txDetails
+    );
   }
 }
 

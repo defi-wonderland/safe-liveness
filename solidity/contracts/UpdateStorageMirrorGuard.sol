@@ -5,6 +5,7 @@ import {BaseGuard} from 'safe-contracts/base/GuardManager.sol';
 import {Enum} from 'safe-contracts/common/Enum.sol';
 import {IGuardCallbackModule} from 'interfaces/IGuardCallbackModule.sol';
 import {IStorageMirror} from 'interfaces/IStorageMirror.sol';
+import {ISafe} from 'interfaces/ISafe.sol';
 
 /**
  * @title UpdateStorageMirrorGuard
@@ -20,16 +21,6 @@ contract UpdateStorageMirrorGuard is BaseGuard {
    */
 
   IGuardCallbackModule public immutable GUARD_CALLBACK_MODULE;
-
-  /**
-   * @notice A boolean that returns true if a tx is changing the safe's settings
-   */
-  bool public didSettingsChange;
-
-  /**
-   * @notice The hash of the new settings
-   */
-  bytes32 public settingsHash;
 
   constructor(IGuardCallbackModule _guardCallbackModule) {
     GUARD_CALLBACK_MODULE = _guardCallbackModule;
@@ -52,14 +43,7 @@ contract UpdateStorageMirrorGuard is BaseGuard {
     bytes memory _signatures,
     address _msgSender
   ) external {
-    didSettingsChange = true;
-    // TODO: change these data with the decoded ones
-    address[] memory _owners = new address[](1);
-    IStorageMirror.SafeSettings memory _safeSettings = IStorageMirror.SafeSettings({owners: _owners, threshold: 1});
-
-    settingsHash = keccak256(abi.encode(_safeSettings));
-
-    emit SettingsChanged(msg.sender, settingsHash, _safeSettings);
+    // TODO: This can be improved with the decoding of the data to accurate catch a change of the safe's settings
   }
 
   /**
@@ -68,10 +52,18 @@ contract UpdateStorageMirrorGuard is BaseGuard {
    * @dev The msg.sender should be the safe
    */
   function checkAfterExecution(bytes32 _txHash, bool _success) external {
-    if (didSettingsChange && _success) {
-      GUARD_CALLBACK_MODULE.saveUpdatedSettings(msg.sender, settingsHash);
-      didSettingsChange = false;
-      settingsHash = keccak256(abi.encodePacked(''));
+    if (_success) {
+      address[] memory _owners = ISafe(msg.sender).getOwners();
+      uint256 _threshold = ISafe(msg.sender).getThreshold();
+
+      IStorageMirror.SafeSettings memory _safeSettings =
+        IStorageMirror.SafeSettings({owners: _owners, threshold: _threshold});
+      bytes32 _settingsHash = keccak256(abi.encode(_safeSettings));
+
+      // NOTE: No need to reset settings as this function will only be called when the settings change
+      GUARD_CALLBACK_MODULE.saveUpdatedSettings(msg.sender, _settingsHash);
+
+      emit SettingsChanged(msg.sender, _settingsHash, _safeSettings);
     }
   }
 }
