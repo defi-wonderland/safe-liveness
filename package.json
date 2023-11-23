@@ -10,7 +10,7 @@
   },
   "author": "Wonderland",
   "scripts": {
-    "anvil:mainnet": "anvil -f --port 8545 https://eth.llamarpc.com --fork-block-number 18621047 --chain-id 1",
+    "anvil:mainnet": "anvil --port 8545 -f https://eth.llamarpc.com --fork-block-number 18621047 --chain-id 1",
     "anvil:optimism": "anvil --port 9545 -f https://mainnet.optimism.io --fork-block-number 112491451 --chain-id 10",
     "build": "forge build",
     "build:optimized": "FOUNDRY_PROFILE=optimized forge build",
