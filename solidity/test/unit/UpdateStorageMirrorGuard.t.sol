@@ -5,6 +5,7 @@ import {Test} from 'forge-std/Test.sol';
 import {UpdateStorageMirrorGuard} from 'contracts/UpdateStorageMirrorGuard.sol';
 import {IGuardCallbackModule} from 'interfaces/IGuardCallbackModule.sol';
 import {IStorageMirror} from 'interfaces/IStorageMirror.sol';
+import {ISafe} from 'interfaces/ISafe.sol';
 
 abstract contract Base is Test {
   event SettingsChanged(address indexed _safe, bytes32 indexed _settingsHash, IStorageMirror.SafeSettings _settings);
@@ -30,6 +31,15 @@ abstract contract Base is Test {
 
 contract UnitUpdateStorageMirrorGuard is Base {
   function testCheckAfterExecution(bytes32 _txHash) public {
+    address[] memory _owners = new address[](1);
+    _owners[0] = safe;
+
+    uint256 _threshold = 1;
+
+    vm.mockCall(address(safe), abi.encodeCall(ISafe.getOwners, ()), abi.encode(_owners));
+
+    vm.mockCall(address(safe), abi.encodeCall(ISafe.getThreshold, ()), abi.encode(_threshold));
+
     vm.mockCall(
       address(guardCallbackModule),
       abi.encodeCall(IGuardCallbackModule.saveUpdatedSettings, (safe, settingsHash)),

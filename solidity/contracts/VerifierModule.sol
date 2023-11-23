@@ -136,6 +136,7 @@ contract VerifierModule is IVerifierModule {
     bytes memory _storageMirrorStorageProof,
     SafeTxnParams calldata _arbitraryTxnParams
   ) internal {
+    uint256 _startingGas = gasleft();
     bytes32 _hashedProposedSettings = _verifyNewSettings(_safe, _proposedSettings, _storageMirrorStorageProof);
 
     // If we dont revert from the _verifyNewSettings() call, then we can update the safe
@@ -156,15 +157,24 @@ contract VerifierModule is IVerifierModule {
       _arbitraryTxnParams.signatures
     );
 
-    // Pay incentives
-    // TODO: Calculations for incentives so its not hardcoded to 1e18
-    ISafe(_safe).execTransactionFromModule(msg.sender, 1e18, '', Enum.Operation.Call);
-
     // Make the storage updates at the end of the call to save gas in a revert scenario
     latestVerifiedSettings[_safe] = _hashedProposedSettings;
     latestVerifiedSettingsTimestamp[_safe] = block.timestamp;
 
     emit VerifiedUpdate(_safe, _hashedProposedSettings);
+
+    // NOTE: This is not the exact gas spent as we still have to make the transaction after the calculation
+    // NOTE: We do all this at the end of the call to get the most accurate gas calculations
+
+    uint256 _gasLeft = gasleft();
+
+    uint256 _gasSpent = _startingGas - _gasLeft;
+
+    // Gas spent plus 10% incentive
+    uint256 _incentive = _gasSpent + _gasSpent * 10 / 100;
+
+    // Pay incentives
+    ISafe(_safe).execTransactionFromModule(msg.sender, _incentive, '', Enum.Operation.Call);
   }
 
   /**
