@@ -41,6 +41,7 @@ jobs:
           echo MAINNET_DEPlOYER_ADDR="${{ secrets.MAINNET_DEPlOYER_ADDR }}" >> .env
           echo MAINNET_DEPlOYER_PK="${{ secrets.MAINNET_DEPlOYER_PK }}" >> .env
           cat .env
+          source .env
 
       - name: Run Anvil Mainnet
         run: yarn anvil:mainnet
