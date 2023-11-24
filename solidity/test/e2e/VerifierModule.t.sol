@@ -2,22 +2,21 @@
 pragma solidity >=0.8.4 <0.9.0;
 
 import {CommonE2EBase} from 'test/e2e/Common.sol';
+import {StateVerifier} from 'libraries/StateVerifier.sol';
 
 contract VerifierModuleE2E is CommonE2EBase {
-  function setUp() public override {
-    super.setUp();
-  }
+  function testExtractStateRoot() public {
+    (, bytes memory _accountProof, bytes memory _blockHeader) = getProof(
+      vm.rpcUrl('mainnet_e2e'),
+      vm.toString(address(storageMirror)),
+      vm.toString((keccak256(abi.encode(address(safe), 0))))
+    );
+    (bytes32 _stateRoot, uint256 _blockNumber) =
+      verifierModule.extractStorageMirrorStorageRoot(_accountProof, _blockHeader);
 
-  function testProposeAndVerifyUpdate() public {
-    address _storageMirrorAddr =
-      vm.parseJsonAddress(vm.readFile('./solidity/scripts/HomeChainDeployments.json'), '$.StorageMirror');
+    uint256 _expectedBlockNumber = vm.parseJsonUint(vm.readFile('./proofs/proof.json'), '$.blockNumber');
 
-    string memory _blockNumberString = vm.toString(_MAINNET_FORK_BLOCK);
-    string memory _rpc = vm.rpcUrl('mainnet_e2e');
-    string memory _contract = vm.toString(address(_storageMirrorAddr));
-    string memory _slot = vm.toString((keccak256(abi.encode(address(safe), 0))));
-
-    (bytes memory _storageProof, bytes memory _accountProof, bytes memory _blockHeader) =
-      getProof(_blockNumberString, _rpc, _contract, _slot);
+    assertTrue(_stateRoot != bytes32(0));
+    assertEq(_blockNumber, _expectedBlockNumber);
   }
 }

@@ -28,7 +28,7 @@ def request_block_header(rpc_endpoint, block_number):
 def mine_anvil_block(rpc_endpoint):
     r = requests.post(rpc_endpoint, json={
         "jsonrpc": "2.0",
-        "method": "anvil_mine",
+        "method": "evm_mine",
         "params": [],
         "id": 1,
     })

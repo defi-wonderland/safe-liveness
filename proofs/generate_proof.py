@@ -10,10 +10,6 @@ def main():
         description="Patricia Merkle Trie Proof Generating Tool",
         formatter_class=argparse.RawTextHelpFormatter)
   
-  parser.add_argument("-b", "--block-number",
-        type=int,
-        help="Block number, defaults to `latest - 15`")
-  
   parser.add_argument("-r", "--rpc",
         default="http://localhost:8545",
         type=str,
@@ -29,13 +25,16 @@ def main():
 
   # Save command line arguments into variables
   args = parser.parse_args()
-
+  
+  mine_anvil_block(args.rpc)
+  
   rpc_endpoint = args.rpc
-  block_number = args.block_number + 1
+  block_number = "latest"
   storage_mirror_contract_address = args.contract
   storage_slot = args.slot
   clean_storage_slot = bytes.fromhex(storage_slot[2:])
-
+ 
+  mine_anvil_block(rpc_endpoint)
   # Generate proof data
   (block_number, block_header, acct_proof, storage_proofs) = generate_proof_data(rpc_endpoint, block_number, storage_mirror_contract_address, [clean_storage_slot])
   
@@ -52,7 +51,11 @@ def main():
     "storageProof": storage_proof.hex()
   }
 
-  print(json.dumps(output))
+  # Serializing json
+  json_object = json.dumps(output, indent=4)  
+
+  with open("./proofs/proof.json", "w") as outfile:
+    outfile.write(json_object)
 
 def generate_proof_data(
     rpc_endpoint,

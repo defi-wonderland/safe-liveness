@@ -5,6 +5,8 @@ import {Script} from 'forge-std/Script.sol';
 import {console} from 'forge-std/console.sol';
 import {stdJson} from 'forge-std/StdJson.sol';
 import {Enum} from 'safe-contracts/common/Enum.sol';
+import {SafeProxy} from 'safe-contracts/proxies/SafeProxy.sol';
+import {Safe} from 'safe-contracts/Safe.sol';
 
 import {DeployHomeChain, DeployVars} from 'scripts/DeployHomeChain.s.sol';
 import {DeployNonHomeChain, DeployVarsNonHomeChain} from 'scripts/DeployNonHomeChain.s.sol';
@@ -17,22 +19,30 @@ import {IStorageMirror} from 'interfaces/IStorageMirror.sol';
 import {IBlockHeaderOracle} from 'interfaces/IBlockHeaderOracle.sol';
 import {IGnosisSafeProxyFactory} from 'test/e2e/IGnosisSafeProxyFactory.sol';
 
+struct Signature {
+  uint8 v;
+  bytes32 r;
+  bytes32 s;
+}
+
 contract DeployE2E is Script, DeployHomeChain, DeployNonHomeChain {
   address internal _deployer = vm.rememberKey(vm.envUint('MAINNET_DEPLOYER_PK'));
   uint256 internal _pk = vm.envUint('MAINNET_DEPLOYER_PK');
-  IGnosisSafeProxyFactory public gnosisSafeProxyFactory = IGnosisSafeProxyFactory(GNOSIS_SAFE_PROXY_FACTORY);
   address[] internal _owners = [_deployer];
+  Safe internal _singletonSafe;
+  IVerifierModule.SafeTxnParams internal _vars;
 
   function run() external {
     vm.createSelectFork(vm.rpcUrl('mainnet_e2e'));
     vm.startBroadcast(_deployer);
+    _singletonSafe = new Safe();
     DeployVars memory _deployVarsHomeChain = DeployVars(_deployer);
 
     // Deploy protocol
     _deployHomeChain(_deployVarsHomeChain);
-    ISafe _safe = ISafe(address(gnosisSafeProxyFactory.createProxy(GNOSIS_SAFE_SINGLETON, '')));
+    ISafe _safe = ISafe(address(new SafeProxy(address(_singletonSafe))));
     address _storageMirrorAddr =
-      vm.parseJsonAddress(vm.readFile('./solidity/scripts/HomeChainDeployments2.json'), '$.StorageMirror');
+      vm.parseJsonAddress(vm.readFile('./solidity/scripts/HomeChainDeployments.json'), '$.StorageMirror');
 
     _setupHomeChain(_safe, _storageMirrorAddr);
 
@@ -47,6 +57,14 @@ contract DeployE2E is Script, DeployHomeChain, DeployNonHomeChain {
     _deployNonHomeChain(_deployVarsNonHomeChain);
 
     vm.stopBroadcast();
+
+    string memory _objectKey = 'deployments';
+
+    string memory _output = vm.serializeAddress(_objectKey, 'Safe', address(_safe));
+
+    vm.writeJson(_output, './solidity/scripts/SafeDeployments.json');
+
+    // saveProof(vm.rpcUrl('mainnet_e2e'), vm.toString(_storageMirrorAddr), vm.toString((keccak256(abi.encode(address(_safe), 0)))));
   }
 
   /**
@@ -95,20 +113,35 @@ contract DeployE2E is Script, DeployHomeChain, DeployNonHomeChain {
       _safe.nonce()
     );
 
+    Signature memory _signature;
+
     // signature
-    (uint8 _v, bytes32 _r, bytes32 _s) = vm.sign(_pk, keccak256(_txData));
+    (_signature.v, _signature.r, _signature.s) = vm.sign(_pk, keccak256(_txData));
+
+    _vars = IVerifierModule.SafeTxnParams({
+      to: address(_guardCallbackModule),
+      value: 0,
+      data: abi.encodeWithSelector(IGuardCallbackModule.setGuard.selector),
+      operation: Enum.Operation.Call,
+      safeTxGas: 0,
+      baseGas: 0,
+      gasPrice: 0,
+      gasToken: address(0),
+      refundReceiver: payable(address(0)),
+      signatures: abi.encodePacked(_signature.r, _signature.s, _signature.v)
+    });
 
     _safe.execTransaction(
-      _guardCallbackModule,
-      0,
-      abi.encodeWithSelector(IGuardCallbackModule.setGuard.selector),
-      Enum.Operation.Call,
-      0,
-      0,
-      0,
-      address(0),
-      payable(0),
-      abi.encodePacked(_r, _s, _v)
+      _vars.to,
+      _vars.value,
+      _vars.data,
+      _vars.operation,
+      _vars.safeTxGas,
+      _vars.baseGas,
+      _vars.gasPrice,
+      _vars.gasToken,
+      _vars.refundReceiver,
+      _vars.signatures
     );
 
     _txData = _safe.encodeTransactionData(
@@ -125,20 +158,43 @@ contract DeployE2E is Script, DeployHomeChain, DeployNonHomeChain {
     );
 
     // signature
-    (_v, _r, _s) = vm.sign(_pk, keccak256(_txData));
+    (_signature.v, _signature.r, _signature.s) = vm.sign(_pk, keccak256(_txData));
+
+    _vars.to = _storageMirrorAddr;
+    _vars.data = abi.encodeWithSelector(IStorageMirror.update.selector, keccak256(abi.encode(_owners, 1)));
+    _vars.signatures = abi.encodePacked(_signature.r, _signature.s, _signature.v);
 
     // execute update storage mirror
     _safe.execTransaction(
-      _storageMirrorAddr,
-      0,
-      abi.encodeWithSelector(IStorageMirror.update.selector, keccak256(abi.encode(_owners, 1))),
-      Enum.Operation.Call,
-      0,
-      0,
-      0,
-      address(0),
-      payable(0),
-      abi.encodePacked(_r, _s, _v)
+      _vars.to,
+      _vars.value,
+      _vars.data,
+      _vars.operation,
+      _vars.safeTxGas,
+      _vars.baseGas,
+      _vars.gasPrice,
+      _vars.gasToken,
+      _vars.refundReceiver,
+      _vars.signatures
     );
   }
+
+  // function saveProof(
+  //   string memory _rpc,
+  //   string memory _contractAddress,
+  //   string memory _storageSlot
+  // ) public {
+  //   string[] memory _commands = new string[](8);
+  //   _commands[0] = 'yarn';
+  //   _commands[1] = 'proof';
+  //   _commands[2] = '--rpc';
+  //   _commands[3] = _rpc;
+  //   _commands[4] = '--contract';
+  //   _commands[5] = _contractAddress;
+  //   _commands[6] = '--slot';
+  //   _commands[7] = _storageSlot;
+
+  //   bytes memory _res = vm.ffi(_commands);
+  //   string memory _output = string(_res);
+  // }
 }
