@@ -53,7 +53,7 @@ def request_account_proof(rpc_endpoint, block_number, address, slots):
     storage_proofs = [
         decode_rpc_proof(slot_data["proof"]) for slot_data in result["storageProof"]
     ]
-
+    
     return (account_proof, storage_proofs)
 
 

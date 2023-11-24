@@ -56,6 +56,6 @@ abstract contract DeployNonHomeChain is Script, TestConstants {
     vm.serializeAddress(_objectKey, 'StorageMirrorRootRegistry', address(_storageMirrorRootRegistry));
     string memory _output = vm.serializeAddress(_objectKey, 'VerifierModule', address(_verifierModule));
 
-    vm.writeJson(_output, './solidity/scripts/NonHomeChainDeployments.json');
+    vm.writeJson(_output, './solidity/scripts/deployments/NonHomeChainDeployments.json');
   }
 }

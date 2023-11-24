@@ -30,6 +30,7 @@ contract DeployE2E is Script, DeployHomeChain, DeployNonHomeChain {
   uint256 internal _pk = vm.envUint('MAINNET_DEPLOYER_PK');
   address[] internal _owners = [_deployer];
   Safe internal _singletonSafe;
+  Safe internal _singletonSafeOp;
   IVerifierModule.SafeTxnParams internal _vars;
 
   function run() external {
@@ -42,7 +43,7 @@ contract DeployE2E is Script, DeployHomeChain, DeployNonHomeChain {
     _deployHomeChain(_deployVarsHomeChain);
     ISafe _safe = ISafe(address(new SafeProxy(address(_singletonSafe))));
     address _storageMirrorAddr =
-      vm.parseJsonAddress(vm.readFile('./solidity/scripts/HomeChainDeployments.json'), '$.StorageMirror');
+      vm.parseJsonAddress(vm.readFile('./solidity/scripts/deployments/HomeChainDeployments.json'), '$.StorageMirror');
 
     _setupHomeChain(_safe, _storageMirrorAddr);
 
@@ -52,9 +53,17 @@ contract DeployE2E is Script, DeployHomeChain, DeployNonHomeChain {
 
     vm.createSelectFork(vm.rpcUrl('optimism_e2e'));
     vm.startBroadcast(_deployer);
+    _singletonSafeOp = new Safe();
+    ISafe _nonHomeChainSafe = ISafe(address(new SafeProxy(address(_singletonSafeOp))));
 
     // Deploy protocol
     _deployNonHomeChain(_deployVarsNonHomeChain);
+
+    address _verifierModule = vm.parseJsonAddress(
+      vm.readFile('./solidity/scripts/deployments/NonHomeChainDeployments.json'), '$.VerifierModule'
+    );
+
+    _setupNonHomeChain(_nonHomeChainSafe, _verifierModule);
 
     vm.stopBroadcast();
 
@@ -62,9 +71,7 @@ contract DeployE2E is Script, DeployHomeChain, DeployNonHomeChain {
 
     string memory _output = vm.serializeAddress(_objectKey, 'Safe', address(_safe));
 
-    vm.writeJson(_output, './solidity/scripts/SafeDeployments.json');
-
-    // saveProof(vm.rpcUrl('mainnet_e2e'), vm.toString(_storageMirrorAddr), vm.toString((keccak256(abi.encode(address(_safe), 0)))));
+    vm.writeJson(_output, './solidity/scripts/deployments/E2ESafeDeployments.json');
   }
 
   /**
@@ -94,8 +101,9 @@ contract DeployE2E is Script, DeployHomeChain, DeployNonHomeChain {
   function _setupHomeChain(ISafe _safe, address _storageMirrorAddr) internal {
     _safe.setup(_owners, 1, address(_safe), bytes(''), address(0), address(0), 0, payable(address(0)));
 
-    address _guardCallbackModule =
-      vm.parseJsonAddress(vm.readFile('./solidity/scripts/HomeChainDeployments.json'), '$.GuardCallbackModule');
+    address _guardCallbackModule = vm.parseJsonAddress(
+      vm.readFile('./solidity/scripts/deployments/HomeChainDeployments.json'), '$.GuardCallbackModule'
+    );
 
     enableModule(_safe, _pk, _guardCallbackModule);
 
@@ -179,22 +187,57 @@ contract DeployE2E is Script, DeployHomeChain, DeployNonHomeChain {
     );
   }
 
-  // function saveProof(
-  //   string memory _rpc,
-  //   string memory _contractAddress,
-  //   string memory _storageSlot
-  // ) public {
-  //   string[] memory _commands = new string[](8);
-  //   _commands[0] = 'yarn';
-  //   _commands[1] = 'proof';
-  //   _commands[2] = '--rpc';
-  //   _commands[3] = _rpc;
-  //   _commands[4] = '--contract';
-  //   _commands[5] = _contractAddress;
-  //   _commands[6] = '--slot';
-  //   _commands[7] = _storageSlot;
+  function _setupNonHomeChain(ISafe _safe, address _verifierModule) internal {
+    _safe.setup(_owners, 1, address(_safe), bytes(''), address(0), address(0), 0, payable(address(0)));
+    enableModule(_safe, _pk, _verifierModule);
 
-  //   bytes memory _res = vm.ffi(_commands);
-  //   string memory _output = string(_res);
-  // }
+    address _needsUpdateGuard = vm.parseJsonAddress(
+      vm.readFile('./solidity/scripts/deployments/NonHomeChainDeployments.json'), '$.NeedsUpdateGuard'
+    );
+
+    // data to sign and send to set the guard
+    bytes memory _txData = _safe.encodeTransactionData(
+      address(_safe),
+      0,
+      abi.encodeWithSelector(ISafe.setGuard.selector, _needsUpdateGuard),
+      Enum.Operation.Call,
+      0,
+      0,
+      0,
+      address(0),
+      payable(0),
+      _safe.nonce()
+    );
+
+    Signature memory _signature;
+
+    // signature
+    (_signature.v, _signature.r, _signature.s) = vm.sign(_pk, keccak256(_txData));
+
+    _vars = IVerifierModule.SafeTxnParams({
+      to: address(_safe),
+      value: 0,
+      data: abi.encodeWithSelector(ISafe.setGuard.selector, _needsUpdateGuard),
+      operation: Enum.Operation.Call,
+      safeTxGas: 0,
+      baseGas: 0,
+      gasPrice: 0,
+      gasToken: address(0),
+      refundReceiver: payable(address(0)),
+      signatures: abi.encodePacked(_signature.r, _signature.s, _signature.v)
+    });
+
+    _safe.execTransaction(
+      _vars.to,
+      _vars.value,
+      _vars.data,
+      _vars.operation,
+      _vars.safeTxGas,
+      _vars.baseGas,
+      _vars.gasPrice,
+      _vars.gasToken,
+      _vars.refundReceiver,
+      _vars.signatures
+    );
+  }
 }

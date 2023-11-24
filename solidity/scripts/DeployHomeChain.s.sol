@@ -49,6 +49,6 @@ abstract contract DeployHomeChain is Script, TestConstants {
     vm.serializeAddress(_objectKey, 'UpdateStorageMirrorGuard', address(_updateStorageMirrorGuard));
     string memory _output = vm.serializeAddress(_objectKey, 'GuardCallbackModule', address(_guardCallbackModule));
 
-    vm.writeJson(_output, './solidity/scripts/HomeChainDeployments.json');
+    vm.writeJson(_output, './solidity/scripts/deployments/HomeChainDeployments.json');
   }
 }

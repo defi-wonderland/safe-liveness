@@ -33,7 +33,7 @@ contract CommonE2EBase is DSTestPlus, TestConstants, Script {
   uint256 internal _mainnetForkId;
   uint256 internal _optimismForkId;
 
-  address public deployer;
+  address internal _deployer = vm.rememberKey(vm.envUint('MAINNET_DEPLOYER_PK'));
   uint256 public deployerKey;
   address public deployerOptimism = makeAddr('deployerOptimism');
   address public proposer = makeAddr('proposer');
@@ -55,12 +55,11 @@ contract CommonE2EBase is DSTestPlus, TestConstants, Script {
   IGnosisSafeProxyFactory public gnosisSafeProxyFactory = IGnosisSafeProxyFactory(GNOSIS_SAFE_PROXY_FACTORY);
 
   function setUp() public virtual {
-    string[] memory _commands = new string[](5);
+    string[] memory _commands = new string[](4);
     _commands[0] = 'forge';
     _commands[1] = 'script';
     _commands[2] = 'solidity/scripts/DeployE2E.s.sol:DeployE2E';
     _commands[3] = '--broadcast';
-    _commands[4] = '--ffi';
 
     vm.ffi(_commands);
 
@@ -68,209 +67,50 @@ contract CommonE2EBase is DSTestPlus, TestConstants, Script {
     _mainnetForkId = vm.createSelectFork(vm.rpcUrl('mainnet_e2e'));
     _optimismForkId = vm.createSelectFork(vm.rpcUrl('optimism_e2e'));
 
-    storageMirror =
-      StorageMirror(vm.parseJsonAddress(vm.readFile('./solidity/scripts/HomeChainDeployments.json'), '$.StorageMirror'));
+    storageMirror = StorageMirror(
+      vm.parseJsonAddress(vm.readFile('./solidity/scripts/deployments/HomeChainDeployments.json'), '$.StorageMirror')
+    );
     updateStorageMirrorGuard = UpdateStorageMirrorGuard(
-      vm.parseJsonAddress(vm.readFile('./solidity/scripts/HomeChainDeployments.json'), '$.UpdateStorageMirrorGuard')
+      vm.parseJsonAddress(
+        vm.readFile('./solidity/scripts/deployments/HomeChainDeployments.json'), '$.UpdateStorageMirrorGuard'
+      )
     );
     guardCallbackModule = GuardCallbackModule(
-      vm.parseJsonAddress(vm.readFile('./solidity/scripts/HomeChainDeployments.json'), '$.GuardCallbackModule')
+      vm.parseJsonAddress(
+        vm.readFile('./solidity/scripts/deployments/HomeChainDeployments.json'), '$.GuardCallbackModule'
+      )
     );
     oracle = BlockHeaderOracle(
-      vm.parseJsonAddress(vm.readFile('./solidity/scripts/NonHomeChainDeployments.json'), '$.BlockHeaderOracle')
+      vm.parseJsonAddress(
+        vm.readFile('./solidity/scripts/deployments/NonHomeChainDeployments.json'), '$.BlockHeaderOracle'
+      )
     );
     needsUpdateGuard = NeedsUpdateGuard(
-      vm.parseJsonAddress(vm.readFile('./solidity/scripts/NonHomeChainDeployments.json'), '$.NeedsUpdateGuard')
+      vm.parseJsonAddress(
+        vm.readFile('./solidity/scripts/deployments/NonHomeChainDeployments.json'), '$.NeedsUpdateGuard'
+      )
     );
     verifierModule = VerifierModule(
-      vm.parseJsonAddress(vm.readFile('./solidity/scripts/NonHomeChainDeployments.json'), '$.VerifierModule')
+      vm.parseJsonAddress(
+        vm.readFile('./solidity/scripts/deployments/NonHomeChainDeployments.json'), '$.VerifierModule'
+      )
     );
     storageMirrorRootRegistry = StorageMirrorRootRegistry(
-      vm.parseJsonAddress(vm.readFile('./solidity/scripts/NonHomeChainDeployments.json'), '$.StorageMirrorRootRegistry')
+      vm.parseJsonAddress(
+        vm.readFile('./solidity/scripts/deployments/NonHomeChainDeployments.json'), '$.StorageMirrorRootRegistry'
+      )
     );
-    safe = ISafe(vm.parseJsonAddress(vm.readFile('./solidity/scripts/SafeDeployments.json'), '$.Safe'));
+    safe = ISafe(vm.parseJsonAddress(vm.readFile('./solidity/scripts/deployments/E2ESafeDeployments.json'), '$.Safe'));
 
-    // NOTE: BELOW IS UNNECCESARY LOGIC I JUST HAVENT REMOVED IT YET
-
-    // Set up both forks
-    // _mainnetForkId = vm.createSelectFork(vm.rpcUrl('mainnet_e2e'));
-    // _optimismForkId = vm.createSelectFork(vm.rpcUrl('optimism_e2e'));
-    // // Select mainnet fork
-    // vm.selectFork(_mainnetForkId);
-
-    // // Make address and key of safe owner
-    // safeOwner = vm.envAddress('MAINNET_SAFE_OWNER_ADDR');
-    // safeOwnerKey = vm.envUint('MAINNET_SAFE_OWNER_PK');
-
-    // // Make address and key of deployer
-    // deployer = vm.envAddress('MAINNET_DEPlOYER_ADDR');
-    // deployerKey = vm.envUint('MAINNET_DEPLOYER_PK');
-
-    // /// =============== HOME CHAIN ===============
-    // vm.broadcast(safeOwnerKey);
-    // safe = ISafe(address(gnosisSafeProxyFactory.createProxy(GNOSIS_SAFE_SINGLETON, ''))); // safeOwner nonce 0
-    // label(address(safe), 'SafeProxy');
-
-    // uint256 _nonce = vm.getNonce(deployer);
-
-    // address _updateStorageMirrorGuardTheoriticalAddress = ContractDeploymentAddress.addressFrom(deployer, _nonce + 2);
-
-    // vm.broadcast(deployer);
-    // storageMirror = new StorageMirror(); // deployer nonce 0
-    // label(address(storageMirror), 'StorageMirror');
-
-    // vm.broadcast(deployer);
-    // guardCallbackModule = new GuardCallbackModule(address(storageMirror), _updateStorageMirrorGuardTheoriticalAddress); // deployer nonce 1
-    // label(address(guardCallbackModule), 'GuardCallbackModule');
-
-    // vm.broadcast(deployer);
-    // updateStorageMirrorGuard = new UpdateStorageMirrorGuard(guardCallbackModule); // deployer nonce 2
-    // label(address(updateStorageMirrorGuard), 'UpdateStorageMirrorGuard');
-
-    // // Make sure the theoritical address was calculated correctly
-    // assert(address(updateStorageMirrorGuard) == _updateStorageMirrorGuardTheoriticalAddress);
-
-    // // Set up owner home chain safe
-    // address[] memory _owners = new address[](1);
-    // _owners[0] = safeOwner;
-    // vm.broadcast(safeOwnerKey); // safeOwner nonce 1
-    // safe.setup(_owners, 1, address(safe), bytes(''), address(0), address(0), 0, payable(0));
-
-    // // Enable guard callback module
-    // enableModule(safe, safeOwnerKey, address(guardCallbackModule));
-
-    // // data to sign and send to set the guard
-    // bytes memory _setGuardData = abi.encodeWithSelector(IGuardCallbackModule.setGuard.selector);
-    // bytes memory _setGuardEncodedTxData = safe.encodeTransactionData(
-    //   address(guardCallbackModule), 0, _setGuardData, Enum.Operation.Call, 0, 0, 0, address(0), payable(0), safe.nonce()
-    // );
-
-    // // signature
-    // (uint8 _v, bytes32 _r, bytes32 _s) = vm.sign(safeOwnerKey, keccak256(_setGuardEncodedTxData));
-    // bytes memory _setGuardSignature = abi.encodePacked(_r, _s, _v);
-
-    // // execute setup of guard
-    // vm.broadcast(safeOwnerKey);
-    // safe.execTransaction(
-    //   address(guardCallbackModule),
-    //   0,
-    //   _setGuardData,
-    //   Enum.Operation.Call,
-    //   0,
-    //   0,
-    //   0,
-    //   address(0),
-    //   payable(0),
-    //   _setGuardSignature
-    // );
-
-    // /// =============== NON HOME CHAIN ===============
-    // vm.selectFork(_optimismForkId);
-    // // Make address and key of non home chain safe owner
-    // (nonHomeChainSafeOwner, nonHomeChainSafeOwnerKey) = makeAddrAndKey('nonHomeChainSafeOwner');
-
-    // address _storageMirrorRootRegistryTheoriticalAddress = ContractDeploymentAddress.addressFrom(deployerOptimism, 2);
-
-    // // Set up non home chain safe
-    // vm.broadcast(nonHomeChainSafeOwnerKey);
-    // nonHomeChainSafe = ISafe(address(gnosisSafeProxyFactory.createProxy(GNOSIS_SAFE_SINGLETON_L2, ''))); // nonHomeChainSafeOwner nonce 0
-    // label(address(nonHomeChainSafe), 'NonHomeChainSafeProxy');
-
-    // // Deploy non home chain contracts
-    // oracle = new BlockHeaderOracle(); // deployerOptimism nonce 0
-    // label(address(oracle), 'BlockHeaderOracle');
-
-    // vm.broadcast(deployerOptimism);
-    // verifierModule =
-    // new VerifierModule(IStorageMirrorRootRegistry(_storageMirrorRootRegistryTheoriticalAddress), address(storageMirror)); // deployerOptimism nonce 1
-    // label(address(verifierModule), 'VerifierModule');
-
-    // vm.broadcast(deployerOptimism);
-    // storageMirrorRootRegistry =
-    //   new StorageMirrorRootRegistry(address(storageMirror), IVerifierModule(verifierModule), IBlockHeaderOracle(oracle)); // deployerOptimism nonce 2
-    // label(address(storageMirrorRootRegistry), 'StorageMirrorRootRegistry');
-
-    // vm.broadcast(deployerOptimism);
-    // needsUpdateGuard = new NeedsUpdateGuard(verifierModule); // deployer nonce 3
-    // label(address(needsUpdateGuard), 'NeedsUpdateGuard');
-
-    // // set up non home chain safe
-    // address[] memory _nonHomeChainSafeOwners = new address[](1);
-    // _nonHomeChainSafeOwners[0] = nonHomeChainSafeOwner;
-
-    // vm.broadcast(nonHomeChainSafeOwnerKey); // nonHomeChainSafeOwner nonce 1
-    // nonHomeChainSafe.setup(
-    //   _nonHomeChainSafeOwners, 1, address(nonHomeChainSafe), bytes(''), address(0), address(0), 0, payable(0)
-    // );
-
-    // // enable verifier module
-    // enableModule(nonHomeChainSafe, nonHomeChainSafeOwnerKey, address(verifierModule));
-
-    // // data to sign and send to set the guard
-    // _setGuardData = abi.encodeWithSelector(ISafe.setGuard.selector, address(needsUpdateGuard));
-    // _setGuardEncodedTxData = nonHomeChainSafe.encodeTransactionData(
-    //   address(nonHomeChainSafe),
-    //   0,
-    //   _setGuardData,
-    //   Enum.Operation.Call,
-    //   0,
-    //   0,
-    //   0,
-    //   address(0),
-    //   payable(0),
-    //   nonHomeChainSafe.nonce()
-    // );
-
-    // // signature
-    // (_v, _r, _s) = vm.sign(nonHomeChainSafeOwnerKey, keccak256(_setGuardEncodedTxData));
-    // _setGuardSignature = abi.encodePacked(_r, _s, _v);
-
-    // // set needs update guard
-    // vm.broadcast(nonHomeChainSafeOwnerKey);
-    // nonHomeChainSafe.execTransaction(
-    //   address(nonHomeChainSafe),
-    //   0,
-    //   _setGuardData,
-    //   Enum.Operation.Call,
-    //   0,
-    //   0,
-    //   0,
-    //   address(0),
-    //   payable(0),
-    //   _setGuardSignature
-    // );
-  }
-
-  /**
-   * @notice Enables a module for the given safe
-   * @param _safe The safe that will enable the module
-   * @param _safeOwnerKey The private key to sign the tx
-   * @param _module The module address to enable
-   */
-  function enableModule(ISafe _safe, uint256 _safeOwnerKey, address _module) public {
-    uint256 _safeNonce = _safe.nonce();
-    // data to sign to enable module
-    bytes memory _enableModuleData = abi.encodeWithSelector(ISafe.enableModule.selector, address(_module));
-    bytes memory _enableModuleEncodedTxData = _safe.encodeTransactionData(
-      address(_safe), 0, _enableModuleData, Enum.Operation.Call, 0, 0, 0, address(0), payable(0), _safeNonce
-    );
-
-    // signature
-    (uint8 _v, bytes32 _r, bytes32 _s) = vm.sign(_safeOwnerKey, keccak256(_enableModuleEncodedTxData));
-    bytes memory _enableModuleSignature = abi.encodePacked(_r, _s, _v);
-
-    // execute enable module
-    vm.broadcast(safeOwnerKey);
-    _safe.execTransaction(
-      address(_safe), 0, _enableModuleData, Enum.Operation.Call, 0, 0, 0, address(0), payable(0), _enableModuleSignature
+    // Save the storage mirror proofs
+    saveProof(
+      vm.rpcUrl('mainnet_e2e'),
+      vm.toString(address(storageMirror)),
+      vm.toString((keccak256(abi.encode(address(safe), 0))))
     );
   }
 
-  function getProof(
-    string memory _rpc,
-    string memory _contractAddress,
-    string memory _storageSlot
-  ) public returns (bytes memory _storageProof, bytes memory _accountProof, bytes memory _blockHeader) {
+  function saveProof(string memory _rpc, string memory _contractAddress, string memory _storageSlot) public {
     string[] memory _commands = new string[](8);
     _commands[0] = 'yarn';
     _commands[1] = 'proof';
@@ -281,12 +121,33 @@ contract CommonE2EBase is DSTestPlus, TestConstants, Script {
     _commands[6] = '--slot';
     _commands[7] = _storageSlot;
 
-    bytes memory _res = vm.ffi(_commands);
-    string memory _output = string(_res);
-    emit log_string(_output);
+    vm.ffi(_commands);
+  }
 
+  function getProof()
+    public
+    returns (bytes memory _storageProof, bytes memory _accountProof, bytes memory _blockHeader)
+  {
     _storageProof = vm.parseJsonBytes(vm.readFile('./proofs/proof.json'), '$.storageProof');
     _blockHeader = vm.parseJsonBytes(vm.readFile('./proofs/proof.json'), '$.blockHeader');
     _accountProof = vm.parseJsonBytes(vm.readFile('./proofs/proof.json'), '$.accountProof');
+  }
+
+  /**
+   * @notice Helpers function to convert bytes to bytes32
+   *
+   * @param _source The bytes to convert
+   * @return _result The bytes32 variable
+   */
+  function _bytesToBytes32(bytes memory _source) internal pure returns (bytes32 _result) {
+    // Ensure the source data is 32 bytes or less
+
+    // Sanity check the keccak256() of  the security settings should always fit in 32 bytes
+    if (_source.length > 33) revert('cant fit');
+
+    // Copy the data into the bytes32 variable
+    assembly {
+      _result := mload(add(add(_source, 1), 32))
+    }
   }
 }
