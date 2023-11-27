@@ -31,6 +31,7 @@
     "proof": "python3 proofs/generate_proof.py",
     "test": "yarn deploy:e2e && forge test --ffi -vvv",
     "test:e2e": "yarn deploy:e2e && forge test --ffi --match-contract E2E -vvv",
+    "test:e2e-workflow": "node e2e-tests-with-nodes.js",
     "test:unit": "forge test --match-contract Unit -vvv",
     "test:unit:deep": "FOUNDRY_FUZZ_RUNS=5000 yarn test:unit"
   },

@@ -27,6 +27,16 @@ jobs:
       - name: Install dependencies
         run: yarn --frozen-lockfile --network-concurrency 1
 
+      - name: setup python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10' # install the python version needed
+
+      - name: install python packages
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
       - name: Precompile using 0.8.19 and via-ir=false
         run: yarn build
 
@@ -34,13 +44,8 @@ jobs:
         run: |
           touch .env
           echo MAINNET_RPC="${{ secrets.MAINNET_RPC }}" >> .env
-          echo GOERLI_RPC="${{ secrets.GOERLI_RPC }}" >> .env
-          echo OPTIMISM_RPC="${{ secrets.OPTIMISM_RPC }}" >> .env
           echo MAINNET_E2E_RPC="${{ secrets.MAINNET_E2E_RPC }}" >> .env
-          echo OPTIMISM_E2E_RPC="${{ secrets.OPTIMISM_E2E_RPC }}" >> .env
-          echo MAINNET_SAFE_OWNER_ADDR="${{ secrets.MAINNET_SAFE_OWNER_ADDR }}" >> .env
-          echo MAINNET_SAFE_OWNER_PK="${{ secrets.MAINNET_SAFE_OWNER_PK }}" >> .env
-          echo MAINNET_DEPLOYER_ADDR="${{ secrets.MAINNET_DEPLOYER_ADDR }}" >> .env
+          echo SEARCHER_PK="${{ secrets.SEARCHER_PK }}" >> .env
           echo MAINNET_DEPLOYER_PK="${{ secrets.MAINNET_DEPLOYER_PK }}" >> .env
           cat .env
 
