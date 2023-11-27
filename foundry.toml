@@ -34,3 +34,6 @@ src = './solidity/interfaces/'
 [rpc_endpoints]
 mainnet = "${MAINNET_RPC}"
 goerli = "${GOERLI_RPC}"
+optimism = "${OPTIMISM_RPC}"
+mainnet_e2e = "${MAINNET_E2E_RPC}"
+optimism_e2e = "${OPTIMISM_E2E_RPC}"
