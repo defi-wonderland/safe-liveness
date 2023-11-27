@@ -51,12 +51,12 @@ library MerklePatriciaProofVerifier {
 
       // The root node is hashed with Keccak-256 ...
       if (i == 0 && rootHash != stack[i].rlpBytesKeccak256()) {
-        revert('revert');
+        revert();
       }
       // ... whereas all other nodes are hashed with the MPT
       // hash function.
       if (i != 0 && nodeHashHash != _mptHashHash(stack[i])) {
-        revert('revert 2');
+        revert();
       }
       // We verified that stack[i] has the correct hash, so we
       // may safely decode it.
@@ -87,7 +87,7 @@ library MerklePatriciaProofVerifier {
           // Sanity check
           if (i < stack.length - 1) {
             // divergent node must come last in proof
-            revert('revert 3');
+            revert();
           }
 
           return new bytes(0);
@@ -97,7 +97,7 @@ library MerklePatriciaProofVerifier {
           // Sanity check
           if (i < stack.length - 1) {
             // leaf node must come last in proof
-            revert('revert 4');
+            revert();
           }
 
           if (mptKeyOffset < mptKey.length) {
@@ -111,7 +111,7 @@ library MerklePatriciaProofVerifier {
           // Sanity check
           if (i == stack.length - 1) {
             // shouldn't be at last level
-            revert('revert 5');
+            revert();
           }
 
           if (!node[1].isList()) {
@@ -133,14 +133,14 @@ library MerklePatriciaProofVerifier {
           mptKeyOffset += 1;
           if (nibble >= 16) {
             // each element of the path has to be a nibble
-            revert('revert 6');
+            revert();
           }
 
           if (_isEmptyBytesequence(node[nibble])) {
             // Sanity
             if (i != stack.length - 1) {
               // leaf node should be at last level
-              revert('revert 7');
+              revert();
             }
 
             return new bytes(0);
@@ -155,7 +155,7 @@ library MerklePatriciaProofVerifier {
           // Sanity
           if (i != stack.length - 1) {
             // should be at last level
-            revert('revert 8');
+            revert();
           }
 
           return node[16].toBytes();
@@ -211,7 +211,7 @@ library MerklePatriciaProofVerifier {
       isLeaf = true;
     } else {
       // Not supposed to happen!
-      revert('revert');
+      revert();
     }
     return (isLeaf, _decodeNibbles(compact, skipNibbles));
   }

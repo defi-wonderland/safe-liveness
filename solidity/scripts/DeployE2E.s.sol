@@ -36,6 +36,7 @@ contract DeployE2E is Script, DeployHomeChain, DeployNonHomeChain {
   function run() external {
     vm.createSelectFork(vm.rpcUrl('mainnet_e2e'));
     vm.startBroadcast(_deployer);
+
     _singletonSafe = new Safe();
     DeployVars memory _deployVarsHomeChain = DeployVars(_deployer);
 
@@ -47,14 +48,7 @@ contract DeployE2E is Script, DeployHomeChain, DeployNonHomeChain {
 
     _setupHomeChain(_safe, _storageMirrorAddr);
 
-    vm.stopBroadcast();
-
     DeployVarsNonHomeChain memory _deployVarsNonHomeChain = DeployVarsNonHomeChain(_deployer, _storageMirrorAddr);
-
-    vm.createSelectFork(vm.rpcUrl('optimism_e2e'));
-    vm.startBroadcast(_deployer);
-    _singletonSafeOp = new Safe();
-    ISafe _nonHomeChainSafe = ISafe(address(new SafeProxy(address(_singletonSafeOp))));
 
     // Deploy protocol
     _deployNonHomeChain(_deployVarsNonHomeChain);
@@ -63,13 +57,15 @@ contract DeployE2E is Script, DeployHomeChain, DeployNonHomeChain {
       vm.readFile('./solidity/scripts/deployments/NonHomeChainDeployments.json'), '$.VerifierModule'
     );
 
-    _setupNonHomeChain(_nonHomeChainSafe, _verifierModule);
+    _setupNonHomeChain(_safe, _verifierModule);
 
     vm.stopBroadcast();
 
     string memory _objectKey = 'deployments';
 
-    string memory _output = vm.serializeAddress(_objectKey, 'Safe', address(_safe));
+    vm.serializeAddress(_objectKey, 'Safe', address(_safe));
+
+    string memory _output = vm.serializeAddress(_objectKey, 'SafeOp', address(_safe));
 
     vm.writeJson(_output, './solidity/scripts/deployments/E2ESafeDeployments.json');
   }
@@ -188,7 +184,6 @@ contract DeployE2E is Script, DeployHomeChain, DeployNonHomeChain {
   }
 
   function _setupNonHomeChain(ISafe _safe, address _verifierModule) internal {
-    _safe.setup(_owners, 1, address(_safe), bytes(''), address(0), address(0), 0, payable(address(0)));
     enableModule(_safe, _pk, _verifierModule);
 
     address _needsUpdateGuard = vm.parseJsonAddress(

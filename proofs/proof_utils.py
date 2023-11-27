@@ -22,6 +22,7 @@ def request_block_header(rpc_endpoint, block_number):
     block_dict = get_json_rpc_result(r)
     block_number = normalize_int(block_dict["number"])
     block_header_fields = [normalize_bytes(block_dict[f]) for f in BLOCK_HEADER_FIELDS]
+    
 
     return (block_number, block_header_fields)
 

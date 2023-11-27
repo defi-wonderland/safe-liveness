@@ -51,7 +51,7 @@ contract StorageMirrorRootRegistry is IStorageMirrorRootRegistry {
     bytes memory _blockHeader = _queryL1BlockHeader();
 
     (bytes32 _latestVerifiedStorageMirrorStorageRoot, uint256 _blockNumber) =
-      VERIFIER_MODULE.extractStorageMirrorStorageRoot(_blockHeader, _accountProof);
+      VERIFIER_MODULE.extractStorageMirrorStorageRoot(_accountProof, _blockHeader);
 
     latestVerifiedStorageMirrorStorageRoot = _latestVerifiedStorageMirrorStorageRoot;
     latestVerifiedBlockNumber = _blockNumber;

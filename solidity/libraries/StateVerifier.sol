@@ -12,26 +12,29 @@ library StateVerifier {
 
   uint256 internal constant _HEADER_STATE_ROOT_INDEX = 3;
   uint256 internal constant _HEADER_NUMBER_INDEX = 8;
+  uint256 internal constant _HEADER_TIMESTAMP_INDEX = 11;
 
   struct BlockHeader {
     bytes32 hash;
     bytes32 stateRootHash;
     uint256 number;
+    uint256 timestamp;
   }
 
   function verifyBlockHeader(bytes memory _rlpBlockHeader)
     internal
-    pure
+    view
     returns (BlockHeader memory _parsedBlockHeader)
   {
     RLPReader.RLPItem[] memory headerFields = _rlpBlockHeader.toRlpItem().toList();
 
     // Sanity check to ensure that the block header is long enough to be valid
-    if (headerFields.length <= _HEADER_NUMBER_INDEX) revert InvalidBlockHeader();
+    if (headerFields.length <= _HEADER_TIMESTAMP_INDEX) revert InvalidBlockHeader();
 
     _parsedBlockHeader.stateRootHash = bytes32(headerFields[_HEADER_STATE_ROOT_INDEX].toUint());
     _parsedBlockHeader.number = headerFields[_HEADER_NUMBER_INDEX].toUint();
     _parsedBlockHeader.hash = keccak256(_rlpBlockHeader);
+    _parsedBlockHeader.timestamp = headerFields[_HEADER_TIMESTAMP_INDEX].toUint();
   }
 
   function extractStorageRootFromAccount(bytes memory _rlpAccount) internal pure returns (bytes32 _storageRoot) {

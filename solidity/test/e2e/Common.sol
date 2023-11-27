@@ -34,14 +34,9 @@ contract CommonE2EBase is DSTestPlus, TestConstants, Script {
   uint256 internal _optimismForkId;
 
   address internal _deployer = vm.rememberKey(vm.envUint('MAINNET_DEPLOYER_PK'));
-  uint256 public deployerKey;
-  address public deployerOptimism = makeAddr('deployerOptimism');
-  address public proposer = makeAddr('proposer');
-  address public safeOwner;
-  uint256 public safeOwnerKey;
+  address internal _searcher = vm.rememberKey(vm.envUint('SEARCHER_PK'));
 
-  address public nonHomeChainSafeOwner;
-  uint256 public nonHomeChainSafeOwnerKey;
+  address[] internal _owners = [_deployer];
 
   StorageMirror public storageMirror;
   UpdateStorageMirrorGuard public updateStorageMirrorGuard;
@@ -52,21 +47,12 @@ contract CommonE2EBase is DSTestPlus, TestConstants, Script {
   StorageMirrorRootRegistry public storageMirrorRootRegistry;
   ISafe public safe;
   ISafe public nonHomeChainSafe;
-  IGnosisSafeProxyFactory public gnosisSafeProxyFactory = IGnosisSafeProxyFactory(GNOSIS_SAFE_PROXY_FACTORY);
 
   function setUp() public virtual {
-    string[] memory _commands = new string[](4);
-    _commands[0] = 'forge';
-    _commands[1] = 'script';
-    _commands[2] = 'solidity/scripts/DeployE2E.s.sol:DeployE2E';
-    _commands[3] = '--broadcast';
-
-    vm.ffi(_commands);
-
     // Set up both forks
     _mainnetForkId = vm.createSelectFork(vm.rpcUrl('mainnet_e2e'));
-    _optimismForkId = vm.createSelectFork(vm.rpcUrl('optimism_e2e'));
 
+    // Fetches all addresses from the deploy script
     storageMirror = StorageMirror(
       vm.parseJsonAddress(vm.readFile('./solidity/scripts/deployments/HomeChainDeployments.json'), '$.StorageMirror')
     );
@@ -101,6 +87,8 @@ contract CommonE2EBase is DSTestPlus, TestConstants, Script {
       )
     );
     safe = ISafe(vm.parseJsonAddress(vm.readFile('./solidity/scripts/deployments/E2ESafeDeployments.json'), '$.Safe'));
+    nonHomeChainSafe =
+      ISafe(vm.parseJsonAddress(vm.readFile('./solidity/scripts/deployments/E2ESafeDeployments.json'), '$.SafeOp'));
 
     // Save the storage mirror proofs
     saveProof(

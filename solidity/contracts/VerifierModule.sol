@@ -142,6 +142,9 @@ contract VerifierModule is IVerifierModule {
 
     _updateLatestVerifiedSettings(_safe, _proposedSettings);
 
+    latestVerifiedSettings[_safe] = _hashedProposedSettings;
+    latestVerifiedSettingsTimestamp[_safe] = block.timestamp;
+
     // Call the arbitrary transaction
     ISafe(_safe).execTransaction(
       _arbitraryTxnParams.to,
@@ -155,10 +158,6 @@ contract VerifierModule is IVerifierModule {
       _arbitraryTxnParams.refundReceiver,
       _arbitraryTxnParams.signatures
     );
-
-    // Make the storage updates at the end of the call to save gas in a revert scenario
-    latestVerifiedSettings[_safe] = _hashedProposedSettings;
-    latestVerifiedSettingsTimestamp[_safe] = block.timestamp;
 
     emit VerifiedUpdate(_safe, _hashedProposedSettings);
 
@@ -313,7 +312,7 @@ contract VerifierModule is IVerifierModule {
 
     // Copy the data into the bytes32 variable
     assembly {
-      _result := mload(add(add(_source, 2), 32))
+      _result := mload(add(add(_source, 1), 32))
     }
   }
 }

@@ -47,6 +47,8 @@ abstract contract DeployNonHomeChain is Script, TestConstants {
     new StorageMirrorRootRegistry(address(_deployVars.storageMirror), IVerifierModule(_verifierModule), IBlockHeaderOracle(_blockHeaderOracle)); // deployer nonce 2
     console.log('STORAGE_MIRROR_ROOT_REGISTRY: ', address(_storageMirrorRootRegistry));
 
+    assert(address(_storageMirrorRootRegistry) == _storageMirrorRootRegistryTheoriticalAddress);
+
     _needsUpdateGuard = new NeedsUpdateGuard(_verifierModule); // deployer nonce 3
     console.log('NEEDS_UPDATE_GUARD: ', address(_needsUpdateGuard));
 
