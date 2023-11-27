@@ -56,6 +56,7 @@ The project is a PoC implementation and should be treated with caution. Bellow w
 - `UpdateStorageMirrorGuard` for the PoC this guard is calling the `GuardCallbackModule` in every call. A possible improvement would be to decode the txData, on the guard `checkTransaction` pre-execute hook, and filter against certain function signatures that change the settings of a Safe to accurately catch the change.
 - `NeedsUpdateGuard` this guard on the non-home chain can brick the user's safe, since it will block every tx, if their security settings expire. Also it's worth mentioning that before using the guard the safe owner must verify at least 1 set of settings using the VerifierModule in order for the guard to have a point of reference for the latest verified update.
 - `VerifierModule` is executing a safeTx after the verification and update of their settings. This safeTx can become invalid since the signatures passed were created before the change of the settings, in this case the user(s) will need to re-sign the tx manually outside of the UI. A possible improvement would be to have a custom safe app that let's you sign even if you are not a "current owner" but are a "potential future owner" of the "soon-to-be-updated" settings
+- `VerifierModule` makes the assumption that the address of the safe is the same on both the home chain, and non-home chain. The current implementation will not work if these addresses are different
 
 ## Contributors
 

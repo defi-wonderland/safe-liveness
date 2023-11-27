@@ -123,7 +123,7 @@ contract VerifierModule is IVerifierModule {
 
   /**
    * @notice Verifies the new settings that are incoming against a storage proof from the StorageMirror on the home chain
-   *
+   * @dev This function makes the assumption that the safe address is the same on both the home and non-home chain as it will break if they are different
    * @param _safe The address of the safe that has new settings
    * @param _proposedSettings The new settings that are being proposed
    * @param _storageMirrorStorageProof The storage proof of the StorageMirror contract on the home chain
