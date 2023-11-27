@@ -44,15 +44,8 @@ jobs:
           echo MAINNET_DEPlOYER_PK="${{ secrets.MAINNET_DEPlOYER_PK }}" >> .env
           cat .env
 
-      - name: Run Anvil Mainnet
-        run: yarn anvil:mainnet
-  
-      - name: Run Anvil Optimism
-        run: yarn anvil:optimism
-
       - name: Run tests
-        shell: bash
-        run: yarn test
+        run: test:e2e-workflow
 
   forge-optimized:
     name: Run Optimized Unit Tests
