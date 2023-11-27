@@ -5,7 +5,6 @@ import {DSTestPlus} from '@defi-wonderland/solidity-utils/solidity/test/DSTestPl
 import {IERC20} from 'isolmate/interfaces/tokens/IERC20.sol';
 import {SafeProxy} from 'safe-contracts/proxies/SafeProxy.sol';
 import {Enum} from 'safe-contracts/common/Enum.sol';
-import {Script} from 'forge-std/Script.sol';
 
 import {StorageMirror} from 'contracts/StorageMirror.sol';
 import {UpdateStorageMirrorGuard} from 'contracts/UpdateStorageMirrorGuard.sol';
@@ -26,7 +25,7 @@ import {TestConstants} from 'test/utils/TestConstants.sol';
 import {ContractDeploymentAddress} from 'test/utils/ContractDeploymentAddress.sol';
 
 // solhint-disable-next-line max-states-count
-contract CommonE2EBase is DSTestPlus, TestConstants, Script {
+contract CommonE2EBase is DSTestPlus, TestConstants {
   uint256 internal constant _MAINNET_FORK_BLOCK = 18_621_047;
   uint256 internal constant _OPTIMISM_FORK_BLOCK = 112_491_451;
 
@@ -50,7 +49,6 @@ contract CommonE2EBase is DSTestPlus, TestConstants, Script {
   function setUp() public virtual {
     // Set up both forks
     _mainnetForkId = vm.createSelectFork(vm.rpcUrl('mainnet_e2e'));
-
 
     // Fetches all addresses from the deploy script
     storageMirror = StorageMirror(
