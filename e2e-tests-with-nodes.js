@@ -39,11 +39,11 @@ require('dotenv').config(); // Initialize dotenv to load environment variables
         // Exit with an error code if tests failed
         if (!testPassed) {
             console.error('Tests failed. Setting exit code to 1.');
-            proccess.exit(1);
+            process.exit(1);
         }
         
         // Exit with a success code if tests passed
-        proccess.exit(0);
+        process.exit(0);
     });
 })();
 
