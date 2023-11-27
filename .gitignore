@@ -26,3 +26,7 @@ docs/src/static
 
 # Cache for the python scripts
 proofs/__pycache__/*
+
+# Deployments for E2E
+solidity/scripts/deployments/*.json
+proofs/proof.json

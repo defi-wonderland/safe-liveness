@@ -1,9 +1,0 @@
-{
-  "BlockHeaderOracle": "0x6c21b9c03Dea21D2776e6c33879bE4b085497803",
-  "GuardCallbackModule": "0xffC57C361C3Dd30c88C6c4202417B7Ed4EF9d7b1",
-  "NeedsUpdateGuard": "0x6520736302BC30ba22f68970fa6B44d77De985A2",
-  "StorageMirror": "0x418B50B1badbB62A80Ed5Bacb832B67FAAe271fA",
-  "StorageMirrorRootRegistry": "0xf413BFfefC401BF3D98c0294e460061cb8c65E37",
-  "UpdateStorageMirrorGuard": "0xb3810e29689eef13C2BF54C25012743A476fA18e",
-  "VerifierModule": "0x96fB46195A318206F9D718f1b06D773b4878CD84"
-}

@@ -2,7 +2,6 @@
 pragma solidity =0.8.19;
 
 import {IBlockHeaderOracle} from 'interfaces/IBlockHeaderOracle.sol';
-import {StateVerifier} from 'libraries/StateVerifier.sol';
 
 /**
  * @title BlockHeaderOracle
