@@ -3,13 +3,12 @@ require('dotenv').config(); // Initialize dotenv to load environment variables
 
 (async() => {
     // Starting Anvil nodes for 'mainnet' and 'optimism'
-    console.debug(`Starting Anvil nodes`);
-    const anvilMainnetPromise = runAnvilNode('mainnet');
-    const anvilOptimismPromise = runAnvilNode('optimism');
+    console.debug(`Starting Ganache node`);
+    const ganachePromise = runGanacheNode();
     
     // Waiting for both nodes to be fully operational
-    console.debug(`Waiting for nodes to be up and running...`);
-    const [anvilMainnet, anvilOptimism] = await Promise.all([anvilMainnetPromise, anvilOptimismPromise]);
+    console.debug(`Waiting for node to be up and running...`);
+    const ganache = await Promise.resolve(ganachePromise);
 
     // Running end-to-end tests
     console.debug(`Running tests`);
@@ -25,15 +24,14 @@ require('dotenv').config(); // Initialize dotenv to load environment variables
         if (String(data).includes('Failing tests:')) testPassed = false;
     });
 
-    // When tests are complete, kill the Anvil nodes
+    // When tests are complete, kill the Ganache nodes
     testProcess.on('close', (code) => {
-        console.debug(`Tests finished running, killing anvil nodes...`);
+        console.debug(`Tests finished running, killing ganache node...`);
         try {
-            anvilMainnet.kill();
-            anvilOptimism.kill();
-            console.debug('Anvil nodes terminated successfully.');
+            ganache.kill();
+            console.debug('Ganache nodes terminated successfully.');
         } catch (error) {
-            console.error(`Error terminating Anvil nodes: ${error}`);
+            console.error(`Error terminating Ganache nodes: ${error}`);
         }
 
         // Exit with an error code if tests failed
@@ -54,20 +52,45 @@ require('dotenv').config(); // Initialize dotenv to load environment variables
  * @param network: name of the network to run (string)
  * @returns promise which resolves when the node is running
  */
-function runAnvilNode(network) {
+// function runAnvilNode(network) {
+//     return new Promise((resolve, reject) => {
+//         const node = spawn('yarn', [`anvil:${network}`]);
+
+//         // Handle errors without exposing sensitive information
+//         node.stderr.on('data', () => {
+//             console.error(`Anvil ${network} node errored! Not showing the error log since it could reveal the RPC url.`);
+//             reject();
+//         });
+        
+//         // Resolve the promise when the node is up
+//         node.stdout.on('data', (data) => {
+//             if (String(data).includes('Listening on')) {
+//                 console.debug(`Anvil ${network} node up and running`);
+//                 resolve(node);
+//             }
+//         });
+//     });
+// }
+
+/**
+ * Start a Ganache node
+ * 
+ * @returns promise which resolves when the node is running
+ */
+function runGanacheNode() {
     return new Promise((resolve, reject) => {
-        const node = spawn('yarn', [`anvil:${network}`]);
+        const node = spawn('yarn', ['ganache']);
 
         // Handle errors without exposing sensitive information
         node.stderr.on('data', () => {
-            console.error(`Anvil ${network} node errored! Not showing the error log since it could reveal the RPC url.`);
+            console.error(`Ganache node errored! Not showing the error log since it could reveal the RPC url.`);
             reject();
         });
         
         // Resolve the promise when the node is up
         node.stdout.on('data', (data) => {
             if (String(data).includes('Listening on')) {
-                console.debug(`Anvil ${network} node up and running`);
+                console.debug(`Ganache node up and running`);
                 resolve(node);
             }
         });
