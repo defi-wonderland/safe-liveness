@@ -45,7 +45,7 @@ jobs:
           cat .env
 
       - name: Run tests
-        run: test:e2e-workflow
+        run: yarn test:e2e-workflow
 
   forge-optimized:
     name: Run Optimized Unit Tests
