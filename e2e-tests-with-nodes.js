@@ -22,7 +22,7 @@ require('dotenv').config(); // Initialize dotenv to load environment variables
     let testPassed = true;
     testProcess.stdout.on('data', (data) => {
         console.info(String(data));
-        if (String(data).includes('Test result: FAILED')) testPassed = false;
+        if (String(data).includes('Failing tests:')) testPassed = false;
     });
 
     // When tests are complete, kill the Anvil nodes
