@@ -10,6 +10,8 @@
   },
   "author": "Wonderland",
   "scripts": {
+    "anvil:mainnet": "anvil --port 8545 -f $MAINNET_RPC --fork-block-number 18621047 --chain-id 1",
+    "anvil:optimism": "anvil --port 9545 -f $OPTIMISM_RPC --fork-block-number 112491451 --chain-id 10",
     "build": "forge build",
     "build:optimized": "FOUNDRY_PROFILE=optimized forge build",
     "coverage": "forge coverage --match-contract Unit",

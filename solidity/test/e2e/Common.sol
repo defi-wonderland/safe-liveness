@@ -32,7 +32,6 @@ contract CommonE2EBase is DSTestPlus, TestConstants, Script {
 
   uint256 internal _mainnetForkId;
   uint256 internal _optimismForkId;
-
   address internal _deployer = vm.rememberKey(vm.envUint('MAINNET_DEPLOYER_PK'));
   address internal _searcher = vm.rememberKey(vm.envUint('SEARCHER_PK'));
 
