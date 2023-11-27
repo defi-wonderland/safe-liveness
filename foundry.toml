@@ -31,6 +31,9 @@ fuzz_runs = 5000
 src = 'solidity/test'
 fs_permissions = [{ access = "read-write", path = "./"}]
 
+[profile.docs]
+src = './solidity/interfaces/'
+
 [rpc_endpoints]
 mainnet = "${MAINNET_RPC}"
 goerli = "${GOERLI_RPC}"

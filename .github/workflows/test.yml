@@ -27,7 +27,7 @@ jobs:
       - name: Install dependencies
         run: yarn --frozen-lockfile --network-concurrency 1
 
-      - name: Precompile using 0.8.14 and via-ir=false
+      - name: Precompile using 0.8.19 and via-ir=false
         run: yarn build
 
       - name: "Create env file"
@@ -40,19 +40,12 @@ jobs:
           echo OPTIMISM_E2E_RPC="${{ secrets.OPTIMISM_E2E_RPC }}" >> .env
           echo MAINNET_SAFE_OWNER_ADDR="${{ secrets.MAINNET_SAFE_OWNER_ADDR }}" >> .env
           echo MAINNET_SAFE_OWNER_PK="${{ secrets.MAINNET_SAFE_OWNER_PK }}" >> .env
-          echo MAINNET_DEPlOYER_ADDR="${{ secrets.MAINNET_DEPlOYER_ADDR }}" >> .env
-          echo MAINNET_DEPlOYER_PK="${{ secrets.MAINNET_DEPlOYER_PK }}" >> .env
+          echo MAINNET_DEPLOYER_ADDR="${{ secrets.MAINNET_DEPLOYER_ADDR }}" >> .env
+          echo MAINNET_DEPLOYER_PK="${{ secrets.MAINNET_DEPLOYER_PK }}" >> .env
           cat .env
 
-      - name: Run Anvil Mainnet
-        run: yarn anvil:mainnet
-  
-      - name: Run Anvil Optimism
-        run: yarn anvil:optimism
-
       - name: Run tests
-        shell: bash
-        run: yarn test
+        run: yarn test:e2e-workflow
 
   forge-optimized:
     name: Run Optimized Unit Tests

@@ -5,7 +5,7 @@ import {DeployNonHomeChain, DeployVarsNonHomeChain} from 'scripts/DeployNonHomeC
 
 // We threat Goerli as the Home Chain in this case
 contract DeployOptimismGoerli is DeployNonHomeChain {
-  address public deployer = vm.rememberKey(vm.envUint('DEPLOYER_OPTIMISM_PRIVATE_KEY'));
+  address public deployer = vm.rememberKey(vm.envUint('DEPLOYER_OPTIMISM_GOERLI_PRIVATE_KEY'));
   address public storageMirrorAddress = vm.envAddress('STORAGE_MIRROR_ADDRESS');
 
   function run() external {
