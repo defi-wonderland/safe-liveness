@@ -22,6 +22,7 @@ fs_permissions = [{ access = "read-write", path = "./"}]
 via_ir = true
 out = 'out-via-ir'
 fuzz_runs = 5000
+src = 'solidity/contracts'
 fs_permissions = [{ access = "read-write", path = "./"}]
 
 [profile.test]
