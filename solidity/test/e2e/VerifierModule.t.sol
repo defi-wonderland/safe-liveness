@@ -238,8 +238,23 @@ contract VerifierModuleE2E is CommonE2EBase {
     assertEq(oracle.blockHeader(), _blockHeader, 'Block header should be saved');
     assertEq(oracle.blockTimestamp(), _blockHeaderStruct.timestamp, 'Timestamp should be saved');
 
+    uint256 _searcherBalance = address(_searcher).balance;
+    uint256 _addressZeroBalance = address(0).balance;
+
+    vm.prank(_searcher);
     verifierModule.extractStorageRootAndVerifyUpdate(
       address(nonHomeChainSafe), _safeSettings, _accountProof, _storageProof, _txn
+    );
+
+    address[] memory _newOwners = nonHomeChainSafe.getOwners();
+
+    assertEq(_newOwners.length, 1, 'Owners should be 1');
+    assertEq(_newOwners[0], address(_deployer), 'Owner should be the deployer');
+    assertGt(address(_searcher).balance, _searcherBalance, 'Searcher should be rewarded');
+    assertGt(
+      address(0).balance,
+      _addressZeroBalance,
+      'Address zero should have more funds because we sent 1 wei the arbitrary txn'
     );
   }
 }
