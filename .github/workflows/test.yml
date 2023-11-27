@@ -40,8 +40,8 @@ jobs:
           echo OPTIMISM_E2E_RPC="${{ secrets.OPTIMISM_E2E_RPC }}" >> .env
           echo MAINNET_SAFE_OWNER_ADDR="${{ secrets.MAINNET_SAFE_OWNER_ADDR }}" >> .env
           echo MAINNET_SAFE_OWNER_PK="${{ secrets.MAINNET_SAFE_OWNER_PK }}" >> .env
-          echo MAINNET_DEPLOYER_ADDR="${{ secrets.MAINNET_DEPlOYER_ADDR }}" >> .env
-          echo MAINNET_DEPLOYER_PK="${{ secrets.MAINNET_DEPlOYER_PK }}" >> .env
+          echo MAINNET_DEPLOYER_ADDR="${{ secrets.MAINNET_DEPLOYER_ADDR }}" >> .env
+          echo MAINNET_DEPLOYER_PK="${{ secrets.MAINNET_DEPLOYER_PK }}" >> .env
           cat .env
 
       - name: Run tests
