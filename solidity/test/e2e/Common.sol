@@ -65,7 +65,7 @@ contract CommonE2EBase is DSTestPlus, TestConstants {
     safeOwnerKey = vm.envUint('MAINNET_SAFE_OWNER_PK');
 
     // Make address and key of deployer
-    deployer = vm.envAddress('MAINNET_DEPlOYER_ADDR');
+    deployer = vm.envAddress('MAINNET_DEPLOYER_ADDR');
     deployerKey = vm.envUint('MAINNET_DEPLOYER_PK');
 
     /// =============== HOME CHAIN ===============
@@ -143,8 +143,9 @@ contract CommonE2EBase is DSTestPlus, TestConstants {
     label(address(oracle), 'BlockHeaderOracle');
 
     vm.broadcast(deployerOptimism);
-    verifierModule =
-    new VerifierModule(IStorageMirrorRootRegistry(_storageMirrorRootRegistryTheoriticalAddress), address(storageMirror)); // deployerOptimism nonce 1
+    verifierModule = new VerifierModule(
+      IStorageMirrorRootRegistry(_storageMirrorRootRegistryTheoriticalAddress), address(storageMirror)
+    ); // deployerOptimism nonce 1
     label(address(verifierModule), 'VerifierModule');
 
     vm.broadcast(deployerOptimism);
