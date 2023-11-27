@@ -32,7 +32,10 @@ require('dotenv').config(); // Initialize dotenv to load environment variables
         anvilOptimism.kill();
 
         // Exit with an error code if tests failed
-        if (!testPassed) process.exitCode = 1;
+        if (!testPassed) {
+            console.error('Tests failed. Setting exit code to 1.');
+            proccess.exit(1);
+        }
     });
 })();
 
