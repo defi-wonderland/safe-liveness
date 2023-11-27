@@ -28,8 +28,13 @@ require('dotenv').config(); // Initialize dotenv to load environment variables
     // When tests are complete, kill the Anvil nodes
     testProcess.on('close', (code) => {
         console.debug(`Tests finished running, killing anvil nodes...`);
-        anvilMainnet.kill();
-        anvilOptimism.kill();
+        try {
+            anvilMainnet.kill();
+            anvilOptimism.kill();
+            console.debug('Anvil nodes terminated successfully.');
+        } catch (error) {
+            console.error(`Error terminating Anvil nodes: ${error}`);
+        }
 
         // Exit with an error code if tests failed
         if (!testPassed) {
