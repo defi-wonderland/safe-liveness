@@ -21,6 +21,13 @@ yarn install
 yarn build
 ```
 
+In order to run the E2E tests you will also need python setup to generate the proofs, to do this run:
+
+```sh
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+```
+
 ### Available Commands
 
 Make sure to set `MAINNET_RPC` and `OPTIMISM_RPC` environment variable before running end-to-end tests.
