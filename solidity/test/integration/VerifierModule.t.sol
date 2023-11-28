@@ -10,11 +10,11 @@ import {IStorageMirror} from 'interfaces/IStorageMirror.sol';
 import {IVerifierModule} from 'interfaces/IVerifierModule.sol';
 import {StateVerifier} from 'libraries/StateVerifier.sol';
 
-contract Integration_VerifierModule is IntegrationBase {
+contract IntegrationVerifierModule is IntegrationBase {
   using RLPReader for RLPReader.RLPItem;
   using RLPReader for bytes;
 
-  IVerifierModule.SafeTxnParams _txn = IVerifierModule.SafeTxnParams({
+  IVerifierModule.SafeTxnParams public txn = IVerifierModule.SafeTxnParams({
     to: address(0),
     value: 1,
     data: '',
@@ -63,7 +63,7 @@ contract Integration_VerifierModule is IntegrationBase {
     );
 
     (uint8 _v, bytes32 _r, bytes32 _s) = vm.sign(vm.envUint('MAINNET_DEPLOYER_PK'), keccak256(_encodedTxn));
-    _txn.signatures = abi.encodePacked(_r, _s, _v);
+    txn.signatures = abi.encodePacked(_r, _s, _v);
 
     IStorageMirror.SafeSettings memory _safeSettings = IStorageMirror.SafeSettings({owners: _owners, threshold: 1});
 
@@ -79,7 +79,7 @@ contract Integration_VerifierModule is IntegrationBase {
     uint256 _addressZeroBalance = address(0).balance;
 
     vm.prank(_searcher);
-    verifierModule.proposeAndVerifyUpdate(address(nonHomeChainSafe), _safeSettings, _storageProof, _txn);
+    verifierModule.proposeAndVerifyUpdate(address(nonHomeChainSafe), _safeSettings, _storageProof, txn);
 
     address[] memory _newOwners = nonHomeChainSafe.getOwners();
 
@@ -110,7 +110,7 @@ contract Integration_VerifierModule is IntegrationBase {
     );
 
     (uint8 _v, bytes32 _r, bytes32 _s) = vm.sign(vm.envUint('MAINNET_DEPLOYER_PK'), keccak256(_encodedTxn));
-    _txn.signatures = abi.encodePacked(_r, _s, _v);
+    txn.signatures = abi.encodePacked(_r, _s, _v);
 
     IStorageMirror.SafeSettings memory _safeSettings = IStorageMirror.SafeSettings({owners: _owners, threshold: 1});
 
@@ -126,7 +126,7 @@ contract Integration_VerifierModule is IntegrationBase {
     uint256 _addressZeroBalance = address(0).balance;
 
     vm.prank(_searcher);
-    verifierModule.proposeAndVerifyUpdate(address(nonHomeChainSafe), _safeSettings, _storageProof, _txn);
+    verifierModule.proposeAndVerifyUpdate(address(nonHomeChainSafe), _safeSettings, _storageProof, txn);
 
     address[] memory _newOwners = nonHomeChainSafe.getOwners();
 
@@ -156,7 +156,7 @@ contract Integration_VerifierModule is IntegrationBase {
     );
 
     (uint8 _v, bytes32 _r, bytes32 _s) = vm.sign(vm.envUint('MAINNET_DEPLOYER_PK'), keccak256(_encodedTxn));
-    _txn.signatures = abi.encodePacked(_r, _s, _v);
+    txn.signatures = abi.encodePacked(_r, _s, _v);
 
     IStorageMirror.SafeSettings memory _safeSettings = IStorageMirror.SafeSettings({owners: _owners, threshold: 1});
 
@@ -172,7 +172,7 @@ contract Integration_VerifierModule is IntegrationBase {
     uint256 _addressZeroBalance = address(0).balance;
 
     vm.prank(_searcher);
-    verifierModule.proposeAndVerifyUpdate(address(nonHomeChainSafe), _safeSettings, _storageProof, _txn);
+    verifierModule.proposeAndVerifyUpdate(address(nonHomeChainSafe), _safeSettings, _storageProof, txn);
 
     address[] memory _newOwners = nonHomeChainSafe.getOwners();
 
@@ -225,7 +225,7 @@ contract Integration_VerifierModule is IntegrationBase {
     );
 
     (uint8 _v, bytes32 _r, bytes32 _s) = vm.sign(vm.envUint('MAINNET_DEPLOYER_PK'), keccak256(_encodedTxn));
-    _txn.signatures = abi.encodePacked(_r, _s, _v);
+    txn.signatures = abi.encodePacked(_r, _s, _v);
 
     IStorageMirror.SafeSettings memory _safeSettings = IStorageMirror.SafeSettings({owners: _owners, threshold: 1});
 
@@ -243,7 +243,7 @@ contract Integration_VerifierModule is IntegrationBase {
 
     vm.prank(_searcher);
     verifierModule.extractStorageRootAndVerifyUpdate(
-      address(nonHomeChainSafe), _safeSettings, _accountProof, _storageProof, _txn
+      address(nonHomeChainSafe), _safeSettings, _accountProof, _storageProof, txn
     );
 
     address[] memory _newOwners = nonHomeChainSafe.getOwners();
