@@ -173,6 +173,48 @@ abstract contract Base is Test {
 }
 
 contract UnitUpdateSettings is Base {
+  function testUpdateSwapsOwners() public {
+    address[] memory _oldOwners = new address[](1);
+    _oldOwners[0] = address(0x2);
+
+    address[] memory _newOwners = new address[](1);
+    _newOwners[0] = address(0x3);
+
+    IStorageMirror.SafeSettings memory _newSettings = IStorageMirror.SafeSettings({owners: _newOwners, threshold: 1});
+
+    vm.mockCall(_fakeSafe, abi.encodeWithSelector(ISafe.getOwners.selector), abi.encode(_oldOwners));
+
+    vm.mockCall(_fakeSafe, abi.encodeWithSelector(ISafe.getThreshold.selector), abi.encode(2));
+
+    vm.mockCall(_fakeSafe, abi.encodeWithSelector(ISafe.isOwner.selector), abi.encode(true));
+
+    vm.mockCall(_fakeSafe, abi.encodeWithSelector(ISafe.isOwner.selector, address(0x3)), abi.encode(false));
+
+    vm.mockCall(
+      _fakeSafe,
+      abi.encodeWithSelector(
+        ISafe.execTransactionFromModule.selector,
+        _fakeSafe,
+        0,
+        abi.encodeWithSelector(ISafe.swapOwner.selector, address(0x1), address(0x2), address(0x3)),
+        Enum.Operation.Call
+      ),
+      abi.encode(true)
+    );
+    vm.expectCall(
+      _fakeSafe,
+      abi.encodeWithSelector(
+        ISafe.execTransactionFromModule.selector,
+        _fakeSafe,
+        0,
+        abi.encodeWithSelector(ISafe.swapOwner.selector, address(0x1), address(0x2), address(0x3)),
+        Enum.Operation.Call
+      )
+    );
+
+    verifierModule.updateLatestVerifiedSettings(_fakeSafe, _newSettings);
+  }
+
   function testUpdateSettingsAddsOwners() public {
     address[] memory _oldOwners = new address[](2);
     _oldOwners[0] = address(0x2);
@@ -242,7 +284,7 @@ contract UnitUpdateSettings is Base {
         ISafe.execTransactionFromModule.selector,
         _fakeSafe,
         0,
-        abi.encodeWithSelector(ISafe.removeOwner.selector, address(0x4), address(0x3), 2),
+        abi.encodeWithSelector(ISafe.removeOwner.selector, address(0x3), address(0x4), 2),
         Enum.Operation.Call
       ),
       abi.encode(true)
@@ -253,7 +295,7 @@ contract UnitUpdateSettings is Base {
         ISafe.execTransactionFromModule.selector,
         _fakeSafe,
         0,
-        abi.encodeWithSelector(ISafe.removeOwner.selector, address(0x4), address(0x3), 2),
+        abi.encodeWithSelector(ISafe.removeOwner.selector, address(0x3), address(0x4), 2),
         Enum.Operation.Call
       )
     );
@@ -285,7 +327,7 @@ contract UnitUpdateSettings is Base {
         ISafe.execTransactionFromModule.selector,
         _fakeSafe,
         0,
-        abi.encodeWithSelector(ISafe.removeOwner.selector, address(0x2), address(0x1), 2),
+        abi.encodeWithSelector(ISafe.removeOwner.selector, address(0x1), address(0x2), 2),
         Enum.Operation.Call
       ),
       abi.encode(true)
@@ -296,7 +338,7 @@ contract UnitUpdateSettings is Base {
         ISafe.execTransactionFromModule.selector,
         _fakeSafe,
         0,
-        abi.encodeWithSelector(ISafe.removeOwner.selector, address(0x2), address(0x1), 2),
+        abi.encodeWithSelector(ISafe.removeOwner.selector, address(0x1), address(0x2), 2),
         Enum.Operation.Call
       )
     );

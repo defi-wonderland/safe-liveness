@@ -228,6 +228,18 @@ contract VerifierModule is IVerifierModule {
     address[] memory _newOwners = _proposedSettings.owners;
     bool _hasUpdatedThreshold;
 
+    // If all we need to do is a swap the rest of the logic is not needed and we can just call the swapOwner function
+    if (_oldOwners.length == 1 && _newOwners.length == 1 && _oldOwners[0] != _newOwners[0]) {
+      ISafe(_safe).execTransactionFromModule(
+        _safe,
+        0,
+        abi.encodeWithSelector(ISafe.swapOwner.selector, _SENTINEL_OWNERS, _oldOwners[0], _newOwners[0]),
+        Enum.Operation.Call
+      );
+
+      return;
+    }
+
     // NOTE: Threshold is automatically updated inside these calls if it needs to be updated
     for (uint256 _i; _i < _newOwners.length;) {
       if (!ISafe(_safe).isOwner(_newOwners[_i])) {
@@ -245,16 +257,20 @@ contract VerifierModule is IVerifierModule {
       }
     }
 
-    for (uint256 _i; _i < _oldOwners.length;) {
-      if (!_linearSearchOwners(_oldOwners[_i], _newOwners)) {
+    // Get the owners again in case any updates were made from the previous loop
+    // We need to do this because the linked list for owners in safe inserts to the beginning of the list
+    address[] memory _changedOwners = ISafe(_safe).getOwners();
+
+    for (uint256 _i; _i < _changedOwners.length;) {
+      if (!_linearSearchOwners(_changedOwners[_i], _newOwners)) {
         _hasUpdatedThreshold = true;
         ISafe(_safe).execTransactionFromModule(
           _safe,
           0,
           abi.encodeWithSelector(
             ISafe.removeOwner.selector,
-            _oldOwners[_i],
-            int256(_i) - 1 < 0 ? _SENTINEL_OWNERS : _oldOwners[_i - 1],
+            int256(_i) - 1 < 0 ? _SENTINEL_OWNERS : _changedOwners[_i - 1],
+            _changedOwners[_i],
             _newThreshold
           ),
           Enum.Operation.Call
