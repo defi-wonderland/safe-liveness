@@ -1,107 +1,101 @@
-<img src="https://raw.githubusercontent.com/defi-wonderland/brand/v1.0.0/external/solidity-foundry-boilerplate-banner.png" alt="wonderland banner" align="center" />
-<br />
+# Safe Liveness
 
-<div align="center"><strong>Start your next Solidity project with Foundry in seconds</strong></div>
-<div align="center">A highly scalable foundation focused on DX and best practices</div>
+⚠️ The code has not been audited yet, tread with caution.
 
-<br />
+## Overview
 
-## Features
+Safe-Liveness is a module that will tackle the liveness problem, one of the main challenges faced by smart wallets to improve cross-chain user experience.
 
-<dl>
-  <dt>Sample contracts</dt>
-  <dd>Basic Greeter contract with an external interface.</dd>
+Unlike EOAs, smart wallets have configuration settings, which can cause synchronization problems across chains. Consequently, SAFEs on different chains function as separate contracts, even though they may share the same address and configuration parameters during deployment. This problem becomes critical when there’s a change in the owners’ list.
 
-  <dt>Foundry setup</dt>
-  <dd>Foundry configuration with multiple custom profiles and remappings.</dd>
-
-  <dt>Deployment scripts</dt>
-  <dd>Sample scripts to deploy contracts on both mainnet and testnet.</dd>
-
-  <dt>Sample e2e & unit tests</dt>
-  <dd>Example tests showcasing mocking, assertions and configuration for mainnet forking. As well it includes everything needed in order to check code coverage.</dd>
-
-  <dt>Linter</dt>
-  <dd>Simple and fast solidity linting thanks to forge fmt</a>.</dd>
-
-  <dt>Github workflows CI</dt>
-  <dd>Run all tests and see the coverage as you push your changes.</dd>
-</dl>
+We will create a module that can verify Safe ownership based on a storage proof, allowing you to easily broadcast any changes in your Safe to other chains.
 
 ## Setup
 
-1. Install Foundry by following the instructions from [their repository](https://github.com/foundry-rs/foundry#installation).
-2. Copy the `.env.example` file to `.env` and fill in the variables.
-3. Install the dependencies by running: `yarn install`. In case there is an error with the commands, run `foundryup` and try them again.
+This project uses [Foundry](https://book.getfoundry.sh/). To build it locally, run:
 
-## Build
-
-The default way to build the code is suboptimal but fast, you can run it via:
-
-```bash
+```sh
+git clone git@github.com:defi-wonderland/safe-liveness.git
+cd safe-liveness
+yarn install
 yarn build
 ```
 
-In order to build a more optimized code ([via IR](https://docs.soliditylang.org/en/v0.8.15/ir-breaking-changes.html#solidity-ir-based-codegen-changes)), run:
+## Integration Tests
 
-```bash
-yarn build:optimized
+In order to run the integration tests you will need python setup to generate the proofs, ganache running and some enviroment variables.
+
+1. Set up python and install requirements
+
+```sh
+python -m pip install --upgrade pip
+pip install -r requirements.txt
 ```
 
-## Running tests
+2. Run ganache
 
-Unit tests should be isolated from any externalities, while E2E usually run in a fork of the blockchain. In this boilerplate you will find example of both.
-
-In order to run both unit and E2E tests, run:
-
-```bash
-yarn test
+```sh
+yarn ganache
 ```
 
-In order to just run unit tests, run:
+3. Set enviroment variables
 
-```bash
-yarn test:unit
+`MAINNET_INTEGRATION_TESTS_RPC` should be the ganache endpoint
+`MAINNET_DEPLOYER_PK` should be the deployer of the protocol and a safe owner
+`SEARCHER_PK` should be the incentivized actor to verify
+
+4. Run the tests
+
+```sh
+yarn test:integration
 ```
 
-In order to run unit tests and run way more fuzzing than usual (5x), run:
+### Available Commands
 
-```bash
-yarn test:unit:deep
-```
+| Yarn Command            | Description                                                |
+| ----------------------- | ---------------------------------------------------------- |
+| `yarn build`            | Compile all contracts.                                     |
+| `yarn coverage`         | See `forge coverage` report.                               |
+| `yarn deploy`           | Deploy the contracts to Mainnet.                           |
+| `yarn test`             | Run all unit and integration tests.                        |
+| `yarn test:unit`        | Run unit tests.                                            |
+| `yarn test:integration` | Run integration tests.                                     |
+| `yarn deploy:mainnet`   | Deploys Home Chain contracts to Mainnet                    |
+| `yarn deploy:optimism`  | Deploys Non-Home Chain contracts to Optimism               |
+| `yarn deploy:goerli`    | Deploys Home Chain contracts to Goerli                     |
+| `yarn deploy:optimismGoerli`| Deploys Non-Home Chain contracts to Optimism Goerli    |
+| `yarn docs:build`       | Build the docs                                             |
+| `yarn docs:run`         | Runs the docs, needs mdbook                                |
+| `yarn ganache`          | Spawn a ganache instance                                   |
 
-In order to just run e2e tests, run:
 
-```bash
-yarn test:e2e
-```
+## Smart Contracts
 
-In order to check your current code coverage, run:
+### Home Chain
+- `UpdateStorageMirrorGuard`: This guard is responsible for calling the GuardCallbackModule when a change in the settings of a safe is executed.
+- `GuardCallbackModule`: This contract is a module that is used to save the updated settings to the StorageMirror.
+- `StorageMirror`: This contract is a storage of information about the safe’s settings. All safe’s settings changes should be mirrored in this contract and be saved. In the end, this contract’s storage root is gonna be used to see if a proposed update on the non-home chain is valid.
 
-```bash
-yarn coverage
-```
+### Non-Home Chain
+- `BlockHeaderOracle`: This contract's purpose is to return the latest stored L1 block header and timestamp. Every X minutes a "magical" off-chain agent provides the latest block header and timestamp.
+- `NeedsUpdateGuard`: This guard should prevent the safe from executing any transaction if an update is needed. An update is needed based on the owner's security settings that was inputed.
+- `VerifierModule`: This contract is the verifier module that verifies the settings of a safe against the StorageMirror on the home chain.
+- `StorageMirrorRootRegistry`: This contract should accept and store storageRoots of the StorageMirror contract in L1.
 
-<br>
 
-## Deploy & verify
+## ⚠️ Warnings
 
-### Setup
+The project is a PoC implementation and should be treated with caution. Bellow we describe some cases that should be taken into account before using the modules/guard.
 
-Configure the `.env` variables.
+- `UpdateStorageMirrorGuard` for the PoC this guard is calling the `GuardCallbackModule` in every call. A possible improvement would be to decode the txData, on the guard `checkTransaction` pre-execute hook, and filter against certain function signatures that change the settings of a Safe to accurately catch the change.
+- `NeedsUpdateGuard` this guard on the non-home chain can brick the user's safe, since it will block every tx, if their security settings expire. Also it's worth mentioning that before using the guard the safe owner must verify at least 1 set of settings using the VerifierModule in order for the guard to have a point of reference for the latest verified update.
+- `VerifierModule` is executing a safeTx after the verification and update of their settings. This safeTx can become invalid since the signatures passed were created before the change of the settings, in this case the user(s) will need to re-sign the tx manually outside of the UI. A possible improvement would be to have a custom safe app that let's you sign even if you are not a "current owner" but are a "potential future owner" of the "soon-to-be-updated" settings
+- `VerifierModule` makes the assumption that the address of the safe is the same on both the home chain, and non-home chain. The current implementation will not work if these addresses are different
 
-### Goerli
+## Contributors
 
-```bash
-yarn deploy:goerli
-```
+Safe-Liveness was built with ❤️ by [Wonderland](https://defi.sucks).
 
-### Mainnet
+Wonderland is a team of top Web3 researchers, developers, and operators who believe that the future needs to be open-source, permissionless, and decentralized.
 
-```bash
-yarn deploy:mainnet
-```
-
-The deployments are stored in ./broadcast
-
-See the [Foundry Book for available options](https://book.getfoundry.sh/reference/forge/forge-create.html).
+[DeFi sucks](https://defi.sucks), but Wonderland is here to make it better.
