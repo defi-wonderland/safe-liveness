@@ -3,7 +3,7 @@ pragma solidity =0.8.19;
 
 import {Script} from 'forge-std/Script.sol';
 import {console} from 'forge-std/console.sol';
-
+import {Test} from 'forge-std/Test.sol';
 import {StorageMirror} from 'contracts/StorageMirror.sol';
 import {UpdateStorageMirrorGuard} from 'contracts/UpdateStorageMirrorGuard.sol';
 import {GuardCallbackModule} from 'contracts/GuardCallbackModule.sol';
@@ -16,7 +16,7 @@ struct DeployVars {
 }
 
 abstract contract DeployHomeChain is Script, TestConstants {
-  function _deploy(DeployVars memory _deployVars)
+  function _deployHomeChain(DeployVars memory _deployVars)
     internal
     returns (
       StorageMirror _storageMirror,
@@ -42,5 +42,13 @@ abstract contract DeployHomeChain is Script, TestConstants {
     console.log('UPDATE_STORAGE_MIRROR_GUARD: ', address(_updateStorageMirrorGuard));
 
     console.log('DEPLOYMENT DONE');
+
+    string memory _objectKey = 'deployments';
+
+    vm.serializeAddress(_objectKey, 'StorageMirror', address(_storageMirror));
+    vm.serializeAddress(_objectKey, 'UpdateStorageMirrorGuard', address(_updateStorageMirrorGuard));
+    string memory _output = vm.serializeAddress(_objectKey, 'GuardCallbackModule', address(_guardCallbackModule));
+
+    vm.writeJson(_output, './solidity/scripts/deployments/HomeChainDeployments.json');
   }
 }

@@ -112,7 +112,7 @@ contract VerifierModule is IVerifierModule {
     // Verify the account proof against the state root
     bytes memory _rlpAccount = MerklePatriciaProofVerifier.extractProofValue(
       _parsedBlockHeader.stateRootHash,
-      abi.encodePacked(keccak256(abi.encode(STORAGE_MIRROR))),
+      abi.encodePacked(keccak256(abi.encodePacked(STORAGE_MIRROR))),
       _storageMirrorAccountProof.toRlpItem().toList()
     );
 
@@ -123,7 +123,7 @@ contract VerifierModule is IVerifierModule {
 
   /**
    * @notice Verifies the new settings that are incoming against a storage proof from the StorageMirror on the home chain
-   *
+   * @dev This function makes the assumption that the safe address is the same on both the home and non-home chain as it will break if they are different
    * @param _safe The address of the safe that has new settings
    * @param _proposedSettings The new settings that are being proposed
    * @param _storageMirrorStorageProof The storage proof of the StorageMirror contract on the home chain
@@ -142,6 +142,9 @@ contract VerifierModule is IVerifierModule {
 
     _updateLatestVerifiedSettings(_safe, _proposedSettings);
 
+    latestVerifiedSettings[_safe] = _hashedProposedSettings;
+    latestVerifiedSettingsTimestamp[_safe] = block.timestamp;
+
     // Call the arbitrary transaction
     ISafe(_safe).execTransaction(
       _arbitraryTxnParams.to,
@@ -155,10 +158,6 @@ contract VerifierModule is IVerifierModule {
       _arbitraryTxnParams.refundReceiver,
       _arbitraryTxnParams.signatures
     );
-
-    // Make the storage updates at the end of the call to save gas in a revert scenario
-    latestVerifiedSettings[_safe] = _hashedProposedSettings;
-    latestVerifiedSettingsTimestamp[_safe] = block.timestamp;
 
     emit VerifiedUpdate(_safe, _hashedProposedSettings);
 
@@ -309,11 +308,11 @@ contract VerifierModule is IVerifierModule {
     // Ensure the source data is 32 bytes or less
 
     // Sanity check the keccak256() of  the security settings should always fit in 32 bytes
-    if (_source.length > 32) revert VerifierModule_BytesToBytes32Failed();
+    if (_source.length > 33) revert VerifierModule_BytesToBytes32Failed();
 
     // Copy the data into the bytes32 variable
     assembly {
-      _result := mload(add(_source, 32))
+      _result := mload(add(add(_source, 1), 32))
     }
   }
 }

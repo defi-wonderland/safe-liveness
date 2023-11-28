@@ -67,12 +67,12 @@ contract UnitStorageMirrorRootRegistryProposeAndVerifyStorageMirrorStorageRoot i
 
     vm.mockCall(
       address(verifierModule),
-      abi.encodeWithSelector(verifierModule.extractStorageMirrorStorageRoot.selector, _blockHeader, _accountProof),
+      abi.encodeWithSelector(verifierModule.extractStorageMirrorStorageRoot.selector, _accountProof, _blockHeader),
       abi.encode(_storageRoot, _blockNumber)
     );
     vm.expectCall(
       address(verifierModule),
-      abi.encodeWithSelector(verifierModule.extractStorageMirrorStorageRoot.selector, _blockHeader, _accountProof)
+      abi.encodeWithSelector(verifierModule.extractStorageMirrorStorageRoot.selector, _accountProof, _blockHeader)
     );
 
     vm.expectEmit(true, true, true, true);

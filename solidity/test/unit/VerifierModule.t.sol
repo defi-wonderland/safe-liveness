@@ -20,7 +20,7 @@ contract TestMPT {
     bytes32 _root,
     bytes memory _key,
     bytes memory _storageProof
-  ) external pure returns (bytes memory _value) {
+  ) external view returns (bytes memory _value) {
     // Need to create the RLP item internally due to memory collision
     RLPReader.RLPItem[] memory _stack = _storageProof.toRlpItem().toList();
     _value = MerklePatriciaProofVerifier.extractProofValue(_root, _key, _stack);
@@ -28,13 +28,13 @@ contract TestMPT {
 
   function verifyBlockHeader(bytes memory _rlpBlockHeader)
     external
-    pure
+    view
     returns (StateVerifier.BlockHeader memory _parsedBlockHeader)
   {
     _parsedBlockHeader = StateVerifier.verifyBlockHeader(_rlpBlockHeader);
   }
 
-  function extractStorageRootFromAccount(bytes memory _rlpAccount) external pure returns (bytes32 _storageRoot) {
+  function extractStorageRootFromAccount(bytes memory _rlpAccount) external view returns (bytes32 _storageRoot) {
     _storageRoot = StateVerifier.extractStorageRootFromAccount(_rlpAccount);
   }
 }
@@ -67,7 +67,7 @@ contract TestVerifierModule is VerifierModule {
     bytes memory _slotValue =
       mpt.extractProofValue(_latestStorageRoot, abi.encodePacked(_safeSettingsSlotHash), _storageMirrorStorageProof);
 
-    bytes32 _hashedSavedSettings = _bytesToBytes32(_slotValue);
+    bytes32 _hashedSavedSettings = bytesToBytes32(_slotValue);
 
     _hashedProposedSettings = keccak256(abi.encode(_proposedSettings));
 
@@ -79,7 +79,15 @@ contract TestVerifierModule is VerifierModule {
   }
 
   function bytesToBytes32(bytes memory _bytes) public pure returns (bytes32 _bytes32) {
-    _bytes32 = _bytesToBytes32(_bytes);
+    // Ensure the source data is 32 bytes or less
+
+    // Sanity check the keccak256() of  the security settings should always fit in 32 bytes
+    if (_bytes.length > 33) revert VerifierModule_BytesToBytes32Failed();
+
+    // Copy the data into the bytes32 variable
+    assembly {
+      _bytes32 := mload(add(_bytes, 32))
+    }
   }
 
   function extractStorageRootAndVerifyUpdateTest(
@@ -847,8 +855,12 @@ contract UnitStorageRoot is Base {
   function testStorageMirrorStorageRootIsCalledWithCorrectParams(bytes memory _accountProof) public {
     vm.assume(_accountProof.length > 0);
 
-    StateVerifier.BlockHeader memory _fakeHeader =
-      StateVerifier.BlockHeader({hash: bytes32(uint256(1)), stateRootHash: bytes32(uint256(2)), number: 500});
+    StateVerifier.BlockHeader memory _fakeHeader = StateVerifier.BlockHeader({
+      hash: bytes32(uint256(1)),
+      stateRootHash: bytes32(uint256(2)),
+      number: 500,
+      timestamp: 5000
+    });
 
     bytes memory _rlpHeader = abi.encodePacked(_fakeHeader.hash);
 

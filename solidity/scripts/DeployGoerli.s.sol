@@ -13,7 +13,7 @@ contract DeployGoerli is DeployHomeChain {
     DeployVars memory _deployVars = DeployVars(deployer);
 
     // Deploy protocol
-    _deploy(_deployVars);
+    _deployHomeChain(_deployVars);
 
     vm.stopBroadcast();
   }

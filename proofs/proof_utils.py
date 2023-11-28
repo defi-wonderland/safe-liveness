@@ -22,8 +22,20 @@ def request_block_header(rpc_endpoint, block_number):
     block_dict = get_json_rpc_result(r)
     block_number = normalize_int(block_dict["number"])
     block_header_fields = [normalize_bytes(block_dict[f]) for f in BLOCK_HEADER_FIELDS]
+    
 
     return (block_number, block_header_fields)
+
+def mine_anvil_block(rpc_endpoint):
+    r = requests.post(rpc_endpoint, json={
+        "jsonrpc": "2.0",
+        "method": "evm_mine",
+        "params": [],
+        "id": 1,
+    })
+
+    result = get_json_rpc_result(r)
+    return result
 
 
 def request_account_proof(rpc_endpoint, block_number, address, slots):
@@ -42,7 +54,7 @@ def request_account_proof(rpc_endpoint, block_number, address, slots):
     storage_proofs = [
         decode_rpc_proof(slot_data["proof"]) for slot_data in result["storageProof"]
     ]
-
+    
     return (account_proof, storage_proofs)
 
 
