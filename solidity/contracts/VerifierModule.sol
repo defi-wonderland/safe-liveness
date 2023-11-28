@@ -229,7 +229,7 @@ contract VerifierModule is IVerifierModule {
     bool _hasUpdatedThreshold;
 
     // If all we need to do is a swap the rest of the logic is not needed and we can just call the swapOwner function
-    if (_oldOwners.length == 1 && _newOwners.length == 1 && _oldOwners[0] != _newOwners[0] && _newThreshold == 1) {
+    if (_oldOwners.length == 1 && _newOwners.length == 1 && _oldOwners[0] != _newOwners[0]) {
       ISafe(_safe).execTransactionFromModule(
         _safe,
         0,
