@@ -12,7 +12,7 @@ require('dotenv').config(); // Initialize dotenv to load environment variables
 
     // Running end-to-end tests
     console.debug(`Running tests`);
-    const testProcess = spawn('yarn', [`test:e2e`]);
+    const testProcess = spawn('yarn', [`test:integration`]);
 
     // Handle test errors
     testProcess.stderr.on('data', (data) => console.error(`Test error: ${data}`));

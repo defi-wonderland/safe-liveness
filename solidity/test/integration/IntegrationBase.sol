@@ -20,12 +20,12 @@ import {IVerifierModule} from 'interfaces/IVerifierModule.sol';
 import {IStorageMirrorRootRegistry} from 'interfaces/IStorageMirrorRootRegistry.sol';
 import {IBlockHeaderOracle} from 'interfaces/IBlockHeaderOracle.sol';
 
-import {IGnosisSafeProxyFactory} from 'test/e2e/IGnosisSafeProxyFactory.sol';
+import {IGnosisSafeProxyFactory} from 'test/integration/IGnosisSafeProxyFactory.sol';
 import {TestConstants} from 'test/utils/TestConstants.sol';
 import {ContractDeploymentAddress} from 'test/utils/ContractDeploymentAddress.sol';
 
 // solhint-disable-next-line max-states-count
-contract CommonE2EBase is DSTestPlus, TestConstants {
+contract IntegrationBase is DSTestPlus, TestConstants {
   uint256 internal constant _MAINNET_FORK_BLOCK = 18_621_047;
   uint256 internal constant _OPTIMISM_FORK_BLOCK = 112_491_451;
 
@@ -48,7 +48,7 @@ contract CommonE2EBase is DSTestPlus, TestConstants {
 
   function setUp() public virtual {
     // Set up both forks
-    _mainnetForkId = vm.createSelectFork(vm.rpcUrl('mainnet_e2e'));
+    _mainnetForkId = vm.createSelectFork(vm.rpcUrl('mainnet_integration'));
 
     // Fetches all addresses from the deploy script
     storageMirror = StorageMirror(
@@ -84,13 +84,16 @@ contract CommonE2EBase is DSTestPlus, TestConstants {
         vm.readFile('./solidity/scripts/deployments/NonHomeChainDeployments.json'), '$.StorageMirrorRootRegistry'
       )
     );
-    safe = ISafe(vm.parseJsonAddress(vm.readFile('./solidity/scripts/deployments/E2ESafeDeployments.json'), '$.Safe'));
-    nonHomeChainSafe =
-      ISafe(vm.parseJsonAddress(vm.readFile('./solidity/scripts/deployments/E2ESafeDeployments.json'), '$.SafeOp'));
+    safe = ISafe(
+      vm.parseJsonAddress(vm.readFile('./solidity/scripts/deployments/IntegrationSafeDeployments.json'), '$.Safe')
+    );
+    nonHomeChainSafe = ISafe(
+      vm.parseJsonAddress(vm.readFile('./solidity/scripts/deployments/IntegrationSafeDeployments.json'), '$.SafeOp')
+    );
 
     // Save the storage mirror proofs
     saveProof(
-      vm.rpcUrl('mainnet_e2e'),
+      vm.rpcUrl('mainnet_integration'),
       vm.toString(address(storageMirror)),
       vm.toString((keccak256(abi.encode(address(safe), 0))))
     );

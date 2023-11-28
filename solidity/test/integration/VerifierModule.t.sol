@@ -2,7 +2,7 @@
 pragma solidity >=0.8.4 <0.9.0;
 
 import {Enum} from 'safe-contracts/common/Enum.sol';
-import {CommonE2EBase} from 'test/e2e/Common.sol';
+import {IntegrationBase} from 'test/integration/IntegrationBase.sol';
 import {StateVerifier} from 'libraries/StateVerifier.sol';
 import {MerklePatriciaProofVerifier} from 'libraries/MerklePatriciaProofVerifier.sol';
 import {RLPReader} from 'solidity-rlp/contracts/RLPReader.sol';
@@ -10,7 +10,7 @@ import {IStorageMirror} from 'interfaces/IStorageMirror.sol';
 import {IVerifierModule} from 'interfaces/IVerifierModule.sol';
 import {StateVerifier} from 'libraries/StateVerifier.sol';
 
-contract VerifierModuleE2E is CommonE2EBase {
+contract Integration_VerifierModule is IntegrationBase {
   using RLPReader for RLPReader.RLPItem;
   using RLPReader for bytes;
 

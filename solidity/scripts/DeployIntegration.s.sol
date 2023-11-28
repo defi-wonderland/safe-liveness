@@ -17,7 +17,7 @@ import {IVerifierModule} from 'interfaces/IVerifierModule.sol';
 import {IStorageMirrorRootRegistry} from 'interfaces/IStorageMirrorRootRegistry.sol';
 import {IStorageMirror} from 'interfaces/IStorageMirror.sol';
 import {IBlockHeaderOracle} from 'interfaces/IBlockHeaderOracle.sol';
-import {IGnosisSafeProxyFactory} from 'test/e2e/IGnosisSafeProxyFactory.sol';
+import {IGnosisSafeProxyFactory} from 'test/integration/IGnosisSafeProxyFactory.sol';
 
 struct Signature {
   uint8 v;
@@ -25,7 +25,7 @@ struct Signature {
   bytes32 s;
 }
 
-contract DeployE2E is Script, DeployHomeChain, DeployNonHomeChain {
+contract DeployIntegration is Script, DeployHomeChain, DeployNonHomeChain {
   address internal _deployer = vm.rememberKey(vm.envUint('MAINNET_DEPLOYER_PK'));
   uint256 internal _pk = vm.envUint('MAINNET_DEPLOYER_PK');
   address[] internal _owners = [_deployer];
@@ -34,7 +34,7 @@ contract DeployE2E is Script, DeployHomeChain, DeployNonHomeChain {
   IVerifierModule.SafeTxnParams internal _vars;
 
   function run() external {
-    vm.createSelectFork(vm.rpcUrl('mainnet_e2e'));
+    vm.createSelectFork(vm.rpcUrl('mainnet_integration'));
     vm.startBroadcast(_deployer);
 
     _singletonSafe = new Safe();
@@ -67,7 +67,7 @@ contract DeployE2E is Script, DeployHomeChain, DeployNonHomeChain {
 
     string memory _output = vm.serializeAddress(_objectKey, 'SafeOp', address(_safe));
 
-    vm.writeJson(_output, './solidity/scripts/deployments/E2ESafeDeployments.json');
+    vm.writeJson(_output, './solidity/scripts/deployments/IntegrationSafeDeployments.json');
   }
 
   /**

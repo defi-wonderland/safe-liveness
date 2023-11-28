@@ -21,25 +21,52 @@ yarn install
 yarn build
 ```
 
-In order to run the E2E tests you will also need python setup to generate the proofs, to do this run:
+## Integration Tests
+
+In order to run the integration tests you will need python setup to generate the proofs, ganache running and some enviroment variables.
+
+1. Set up python and install requirements
 
 ```sh
 python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-### Available Commands
+2. Run ganache
 
-Make sure to set `MAINNET_RPC` and `OPTIMISM_RPC` environment variable before running end-to-end tests.
+```sh
+yarn ganache
+```
+
+3. Set enviroment variables
+
+`MAINNET_INTEGRATION_TESTS_RPC` should be the ganache endpoint
+`MAINNET_DEPLOYER_PK` should be the deployer of the protocol and a safe owner
+`SEARCHER_PK` should be the incentivized actor to verify
+
+4. Run the tests
+
+```sh
+yarn test:integration
+```
+
+### Available Commands
 
 | Yarn Command            | Description                                                |
 | ----------------------- | ---------------------------------------------------------- |
 | `yarn build`            | Compile all contracts.                                     |
 | `yarn coverage`         | See `forge coverage` report.                               |
-| `yarn deploy`           | Deploy the contracts to Mainnet.                  |
-| `yarn test`             | Run all unit and e2e tests.                        |
+| `yarn deploy`           | Deploy the contracts to Mainnet.                           |
+| `yarn test`             | Run all unit and integration tests.                        |
 | `yarn test:unit`        | Run unit tests.                                            |
-| `yarn test:e2e`         | Run e2e tests.                                     |
+| `yarn test:integration` | Run integration tests.                                     |
+| `yarn deploy:mainnet`   | Deploys Home Chain contracts to Mainnet                    |
+| `yarn deploy:optimism`  | Deploys Non-Home Chain contracts to Optimism               |
+| `yarn deploy:goerli`    | Deploys Home Chain contracts to Goerli                     |
+| `yarn deploy:optimismGoerli`| Deploys Non-Home Chain contracts to Optimism Goerli    |
+| `yarn docs:build`       | Build the docs                                             |
+| `yarn docs:run`         | Runs the docs, needs mdbook                                |
+| `yarn ganache`          | Spawn a ganache instance                                   |
 
 
 ## Smart Contracts
