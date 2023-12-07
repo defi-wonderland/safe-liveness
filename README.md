@@ -8,8 +8,6 @@ Safe-Liveness is a module that will tackle the liveness problem, one of the main
 
 Unlike EOAs, smart wallets have configuration settings, which can cause synchronization problems across chains. Consequently, SAFEs on different chains function as separate contracts, even though they may share the same address and configuration parameters during deployment. This problem becomes critical when there’s a change in the owners’ list.
 
-We will create a module that can verify Safe ownership based on a storage proof, allowing you to easily broadcast any changes in your Safe to other chains.
-
 ## Setup
 
 This project uses [Foundry](https://book.getfoundry.sh/). To build it locally, run:
