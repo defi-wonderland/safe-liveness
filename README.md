@@ -90,6 +90,10 @@ The project is a PoC implementation and should be treated with caution. Bellow w
 - `VerifierModule` is executing a safeTx after the verification and update of their settings. This safeTx can become invalid since the signatures passed were created before the change of the settings, in this case the user(s) will need to re-sign the tx manually outside of the UI. A possible improvement would be to have a custom safe app that let's you sign even if you are not a "current owner" but are a "potential future owner" of the "soon-to-be-updated" settings
 - `VerifierModule` makes the assumption that the address of the safe is the same on both the home chain, and non-home chain. The current implementation will not work if these addresses are different
 
+## Licensing
+
+The primary license for Safe Liveness contracts is MIT, see [`LICENSE`](./LICENSE).
+
 ## Contributors
 
 Safe-Liveness was built with ❤️ by [Wonderland](https://defi.sucks).
